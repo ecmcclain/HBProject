@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}TEMP TITLE{% endblock %}
+
+{% block body %}
+  <h1>Please sign up!</h1>
+
+  <h2>Create Account</h2>
+  <form action="/users" method="POST">
+    <p>
+      Username <input type="text" name="username">
+    </p>
+
+    <p>
+      Password <input type="password" name="password">
+    </p>
+
+    <p>
+        Allow explicit content? 
+        <input type="checkbox" name="explicit_content" value="True" id="yes">
+        <label for="yes">Yes</label>
+        <input type="checkbox" name="explicit_content" value="False" id="no">
+        <label for="no">no</label>
+    </p>
+
+    <p>
+      <input type="submit">
+    </p>
+  </form>
+  Already have an account?
+  <a href='/'>Log In</a>
+
+{% endblock %}
