@@ -13,7 +13,7 @@ model.connect_to_db(server.app)
 model.db.create_all()
 
 #create fake users and tracks
-for n in range(10):
+for n in range(2):
     username = f'user{n}@test.com' 
     password = 'test'
 
@@ -29,8 +29,9 @@ for n in range(10):
     for j in range(10):
         title = f'texas holdem{j}' 
         artist = f'Beyonce{j}'
+        artist_id = n+200
         spotify_track_id = n+100 
-        track = crud.create_track(title,artist,spotify_track_id)
+        track = crud.create_track(title,artist,artist_id, spotify_track_id)
         
         model.db.session.add(track)
         model.db.session.commit()

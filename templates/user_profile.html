@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}User - Details{% endblock %}
+
+{% block body %}
+<h1>User Profile</h1>
+
+<p>
+  Username: {{ user.username }}
+</p>
+
+<h2> Create your own playlist! </h2>
+<form action = /solo_playlist method = 'POST'>  
+  <p>
+    <button type="submit"> Create Playlist</button>
+  </p>
+</form>
+
+<h2>Create a blend with another user</h2>
+<form action = /blend method = 'POST'>  
+  <p>
+    Please the other user's username: <input type="text" name="other-user">
+  </p>
+  <input type="submit">
+
+</form>
+
+<h2>User's Tracks</h2>
+{% for track in user.tracks %}
+  <li>{{ track.title }}</li>
+{% endfor %}
+
+<br>
+
+<a href='/authorize'>Refresh data?</a>
+
+{% endblock %}

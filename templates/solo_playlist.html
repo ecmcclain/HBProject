@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Play - Details{% endblock %}
+
+{% block body %}
+<h1>{{ playlist.title }}</h1>
+
+<p>
+  Username: {{ user.username }}
+</p>
+
+
+<h2> Tracks</h2>
+<ol>
+{% for track in playlist.tracks %}
+  <li>{{ track.title }}, {{ track.artist }}</li>
+{% endfor %}
+</ol>
+
+{% endblock %}

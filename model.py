@@ -23,6 +23,7 @@ class Track(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String)
     artist = db.Column(db.String)
+    artist_id = db.Column(db.String)
     spotify_track_id = db.Column(db.String)
 
     users = db.relationship('User', secondary='user_tracks', back_populates='tracks')

@@ -1,6 +1,8 @@
 # from jinja2 import StrictUndefined
 from flask import Flask, redirect, request, session, render_template, jsonify, flash
 from model import connect_to_db, db
+from random import sample, choice
+
 import crud
 
 import urllib.parse, datetime
@@ -42,12 +44,12 @@ def create_account():
     if crud.get_user_by_username(username) is not None:
         flash('Account already exists with that username. Please log in or use a different username.')
     else:
-        flash('Account created, please log in.')
         user = crud.create_user(username, password, explicit_content)
         db.session.add(user)
         db.session.commit()
+        session['created_user_id'] = user.id
 
-    return redirect('/')
+    return redirect('/authorize')
 
 @app.route('/login', methods = ['POST'])
 def login():
@@ -61,11 +63,67 @@ def login():
         if user.password == password:
             flash('Logged in!')
             session['current_user'] = user.id
-            return redirect('/authorize')
+            return render_template('user_profile.html', user = user)
     
     flash('Email or password incorrect, please try again.') 
+    
+    return redirect('/')
+
+@app.route('/solo_playlist', methods = ['POST'])
+def create_solo_playlist():
+
+    user = crud.get_user_by_id(session['current_user'])
+    playlist = crud.create_solo_playlist(user.id, f'{user.username} Playlist', False)
+    db.session.add(playlist)
+    db.session.commit()
+
+    if 'access_token' not in session: 
+        return redirect('/authorize')
+
+    if datetime.datetime.now().timestamp() > session['expires_at']:
+        return redirect('/refresh-token')
+    
+    headers = {
+        'Authorization': f"Bearer {session['access_token']}"
+    }
+
+    user_seed_artists = crud.get_users_spotify_artists_ids(user)
+    user_seed_tracks = crud.get_users_spotify_track_ids(user)
+    solo_playlist_url = API_BASE_URL + f'recommendations?seed_artists={choice(user_seed_artists)},{choice(user_seed_artists)},{choice(user_seed_artists)},{choice(user_seed_artists)}&seed_tracks={choice(user_seed_tracks)}&limit=50'
+
+    response = requests.get(solo_playlist_url, headers=headers)
+    playlist_tracks = response.json()
+
+    for track in playlist_tracks['tracks']:
+        if len(playlist.tracks) < 20:
+            track_id = track['id']
+            if crud.get_track_by_spotify_id(track_id) not in user.tracks:
+                title = track['name']
+                artist = track['artists'][0]['name']
+                artist_id = track['artists'][0]['id']
+
+                new_track = crud.create_track(title, artist, artist_id, track_id)
+                db.session.add(new_track)
+                db.session.commit()
+
+                playlist_track = crud.create_playlist_solo_track(playlist,new_track)
+                db.session.add(playlist_track)
+                db.session.commit()
+
+    return render_template('solo_playlist.html', user=user, playlist=playlist)
+
+@app.route('/blend', methods = ['POST'])
+def create_blend():
+
+    other_user = request.form.get('other-user')
 
     return redirect('/')
+
+
+
+
+
+
 
 @app.route('/authorize')
 def authorize():
@@ -90,7 +148,6 @@ def callback():
         return jsonify({"error": request.args['error']})
     
     if 'code' in request.args:
-        print("I GOT HEREEEEEE")
 
         req_body = {
             'code': request.args['code'],
@@ -180,6 +237,11 @@ def get_user_data():
     #             new_track = crud.create_track(title, artist, spotify_track_id)
     #             db.session.add(new_track)
 
+    if 'created_user_id' in session: 
+        created_user = crud.get_user_by_id(session['created_user_id'])
+    else: 
+        created_user = crud.get_user_by_id(session['current_user'])
+
     top_tracks_url = API_BASE_URL + f'me/top/tracks?time_range=long_term'
 
     while top_tracks_url is not None:
@@ -195,15 +257,24 @@ def get_user_data():
         for track in items:
             title = track['name']
             artist = track['artists'][0]['name']
+            artist_id = track['artists'][0]['id']
             spotify_track_id = track['id']
-            # print(title)
             if crud.get_track_by_spotify_id(spotify_track_id) is None:
                 print(crud.get_track_by_spotify_id(spotify_track_id))
-                new_track = crud.create_track(title, artist, spotify_track_id)
+                new_track = crud.create_track(title, artist, artist_id, spotify_track_id)
                 db.session.add(new_track)
-
+                db.session.commit()
+                new_user_track = crud.create_user_track(created_user,new_track,listened_to=True)
+                db.session.add(new_user_track)
     db.session.commit()
-    return jsonify(top_tracks)
+
+    if 'created_user_id' in session: 
+        flash('Account created, please log in.')
+        del session['created_user_id']
+        return redirect('/')
+    else: 
+        flash('User data was updated')
+        return render_template('user_profile.html', user = created_user)
 
 @app.route('/refresh-token')
 def get_access_token():
