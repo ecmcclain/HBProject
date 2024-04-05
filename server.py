@@ -27,6 +27,8 @@ API_BASE_URL = 'https://api.spotify.com/v1/'
 def homepage():
     """Show homepage."""
 
+    print(session)
+
     return render_template('homepage.html')
 
 @app.route('/users')
@@ -49,6 +51,10 @@ def create_account():
         db.session.commit()
         session['created_user_id'] = user.id
 
+        print("SESSION USER")
+        print(session)
+        # print(f'SESSION USER: {session['created_user_id']}')
+
     return redirect('/authorize')
 
 @app.route('/login', methods = ['POST'])
@@ -70,10 +76,8 @@ def login():
     return redirect('/')
 
 @app.route('/playlist', methods = ['POST'])
-def create_playlist():
+def create_solo_playlist():
 
-    other_user = request.form.get('other-user')
-    print(other_user)
     user = crud.get_user_by_id(session['current_user'])
     playlist = crud.create_solo_playlist(user.id, f'{user.username} Playlist', False)
     db.session.add(playlist)
@@ -114,6 +118,55 @@ def create_playlist():
 
     return render_template('playlist.html', user=user, playlist=playlist)
 
+@app.route('/playlist/<other_id>', methods = ['POST'])
+def create_shared_playlist(other_id):
+
+    current_user = crud.get_user_by_id(session['current_user'])
+    other_user = crud.get_user_by_id(other_id)
+    playlist = crud.create_shared_playlist(current_user.id, other_id, f'{current_user.username} & {other_user.username} Playlist', False)
+    db.session.add(playlist)
+    db.session.commit()
+
+    if 'access_token' not in session: 
+        return redirect('/authorize')
+
+    if datetime.datetime.now().timestamp() > session['expires_at']:
+        return redirect('/refresh-token')
+    
+    headers = {
+        'Authorization': f"Bearer {session['access_token']}"
+    }
+
+    for user in [current_user, other_user]:
+        if user == current_user:
+            other = other_user
+        else:
+            other = current_user
+
+        user_seed_artists = crud.get_users_spotify_artists_ids(user)
+        user_seed_tracks = crud.get_users_spotify_track_ids(user)
+        solo_playlist_url = API_BASE_URL + f'recommendations?seed_artists={choice(user_seed_artists)},{choice(user_seed_artists)},{choice(user_seed_artists)},{choice(user_seed_artists)},{choice(user_seed_artists)}&limit=50'
+
+        response = requests.get(solo_playlist_url, headers=headers)
+        playlist_tracks = response.json()
+
+        for track in playlist_tracks['tracks']:
+            if len(playlist.tracks) < 10 or (user == other_user and len(playlist.tracks) < 20):
+                track_id = track['id']
+                if crud.get_track_by_spotify_id(track_id) not in other.tracks:
+                    title = track['name']
+                    artist = track['artists'][0]['name']
+                    artist_id = track['artists'][0]['id']
+
+                    new_track = crud.create_track(title, artist, artist_id, track_id)
+                    db.session.add(new_track)
+                    db.session.commit()
+
+                    playlist_track = crud.create_playlist_shared_track(playlist,new_track)
+                    db.session.add(playlist_track)
+                    db.session.commit()
+    return render_template('playlist.html', user=user, playlist=playlist)
+
 @app.route('/blend', methods = ['POST'])
 def create_blend():
     
@@ -136,19 +189,19 @@ def create_blend():
 
     return render_template('user_profile.html', user = current_user)
 
-@app.route('/update_invitation/<user_id>', methods=["POST"])
-def update_invitation(user_id):
+@app.route('/update_invitation/<invitation_id>', methods=["POST"])
+def update_invitation(invitation_id):
     user = crud.get_user_by_id(session['current_user'])
-    other_user = crud.get_user_by_id(user_id)
+    invitation = crud.get_invitation_by_id(invitation_id)
+    other_user = crud.get_user_by_id(invitation.creating_user_id)
 
     value = request.form.get('invitation')
-    invitation = crud.get_invitation_by_users(other_user,user)
 
     if value == 'accept':
         flash(f'You accepted invitation from {other_user.username}')
         invitation.accepted = True
     if value == 'decline':
-        db.session.delete(invitation)
+        invitation.accepted = False
         
     db.session.commit()
     return render_template('user_profile.html', user=user)
@@ -193,8 +246,6 @@ def callback():
 
         response = requests.post(TOKEN_URL, data=req_body)
         token_info = response.json()
-
-        print(token_info)
 
         session['access_token'] = token_info['access_token']
         session['refresh_token'] = token_info['refresh_token']
@@ -270,7 +321,8 @@ def get_user_data():
     #         if crud.get_track_by_spotify_id(spotify_track_id) is None:
     #             new_track = crud.create_track(title, artist, spotify_track_id)
     #             db.session.add(new_track)
-
+    print(session)
+    print(session['created_user_id'])
     if 'created_user_id' in session: 
         created_user = crud.get_user_by_id(session['created_user_id'])
     else: 

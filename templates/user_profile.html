@@ -31,14 +31,24 @@
 {% endfor %}
 
 <h2> Invitations pending your approval: </h2>
-{% for users in user.received_invitations %}
-  <form action = "/update_invitation/{{ users.id }}" method = 'POST'>
-    <li>Invitation from {{ users.username }}
+{% for invitation_id in user.get_pending_invitations(user) %}
+  <form action = "/update_invitation/{{ invitation_id }}" method = 'POST'>
+    <li>Invitation from {{ user.get_other_user_by_invitation_id(invitation_id).username }}
       <button type="submit" name="invitation" value="accept">Accept</button>
       <button type="submit" name="invitation" value="decline">Decline</button>
     </li>
   </form>
+
 {% endfor %}
+
+<h2> Accepted Invitations: </h2>
+{% for invitation_id in user.get_accepted_invitations(user) %}
+  <form action = "/playlist/{{user.get_other_user_by_invitation_id(invitation_id).id}}" method = 'POST'>
+    Playlist with {{user.get_other_user_by_invitation_id(invitation_id).username}}
+    <button type="submit" name="invitation" value="accept">View Playlist</button>
+  </form>
+{% endfor %}
+
 
 <h2>User's Tracks</h2>
 {% for track in user.tracks %}

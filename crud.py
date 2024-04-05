@@ -16,13 +16,13 @@ def return_all_users():
 
 def get_user_by_username(username):
 
-    user = db.session.query(User).filter_by(username=username).first()
+    user = db.session.query(User).filter(User.username == username).first()
 
     return user
 
 def get_user_by_id(id):
 
-    user = db.session.query(User).filter_by(id=id).first()
+    user = db.session.query(User).get(id)
 
     return user
 
@@ -88,9 +88,9 @@ def return_all_solo_playlists():
 
     return solo_playlists
 
-def create_playlist_shared_track(playlist_id, track_id):
+def create_playlist_shared_track(playlist, track):
 
-    playlist_shared_track = Playlist_Shared_Track(playlist_id=playlist_id, track_id=track_id)
+    playlist_shared_track = Playlist_Shared_Track(playlist_id=playlist.id, track_id=track.id)
 
     return playlist_shared_track 
 
@@ -105,10 +105,10 @@ def create_invitation(creating_user_id, joining_user_id, accepted):
     invitation = Invitation(creating_user_id=creating_user_id, joining_user_id= joining_user_id, accepted=accepted)
 
     return invitation
+    
+def get_invitation_by_id(invitation_id):
 
-def get_invitation_by_users(creating_user, joining_user):
-
-    invitation = db.session.query(Invitation).filter((Invitation.creating_user_id==creating_user.id) & (Invitation.joining_user_id==joining_user.id)).first()
+    invitation = db.session.query(Invitation).get(invitation_id)
 
     return invitation
 

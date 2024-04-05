@@ -13,9 +13,40 @@ class User(db.Model):
     password = db.Column(db.String)
     explicit_content = db.Column(db.Boolean)
 
-    tracks = db.relationship('Track', secondary='user_tracks', back_populates='users')
-    sent_invitations = db.relationship('User', secondary='invitations', primaryjoin='and_(users.c.id==invitations.c.creating_user_id)', secondaryjoin='and_(invitations.c.joining_user_id==users.c.id)', back_populates='received_invitations')
-    received_invitations = db.relationship('User', secondary='invitations', primaryjoin='and_(users.c.id==invitations.c.joining_user_id)', secondaryjoin='and_(invitations.c.creating_user_id==users.c.id)',back_populates='sent_invitations')
+    tracks = db.relationship('Track', 
+                            secondary='user_tracks', 
+                            back_populates='users')
+    sent_invitations = db.relationship('User', 
+                            secondary='invitations', 
+                            primaryjoin='and_(users.c.id==invitations.c.creating_user_id)', 
+                            secondaryjoin='and_(invitations.c.joining_user_id==users.c.id)', 
+                            back_populates='received_invitations')
+    received_invitations = db.relationship('User', 
+                            secondary='invitations', 
+                            primaryjoin='and_(users.c.id==invitations.c.joining_user_id)', 
+                            secondaryjoin='and_(invitations.c.creating_user_id==users.c.id)',
+                            back_populates='sent_invitations')
+    
+    @classmethod
+    def get_pending_invitations(cls, current_user):
+        invitation_ids = db.session.query(Invitation.id).filter((current_user.id == Invitation.joining_user_id) & (Invitation.accepted==False)).all()
+        return [item for t in invitation_ids for item in t]
+
+    @classmethod
+    def get_accepted_invitations(cls, current_user):
+        invitation_ids = db.session.query(Invitation.id).filter((current_user.id == Invitation.joining_user_id) & (Invitation.accepted==True)).all()
+        return [item for t in invitation_ids for item in t]
+
+    @classmethod
+    def get_other_user_by_invitation_id(cls, invitation_id):
+        invitation = db.session.query(Invitation).filter(Invitation.id == invitation_id).first()
+        if User.id == invitation.creating_user_id: 
+            other_user_id = invitation.joining_user_id
+        else: 
+            other_user_id = invitation.creating_user_id
+        
+        other_user = db.session.query(User).filter(User.id == other_user_id).first()
+        return other_user
 
 class Track(db.Model):
     """Data model for a track."""
