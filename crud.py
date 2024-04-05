@@ -1,6 +1,6 @@
 """CRUD operations."""
 
-from model import db, User, Track, User_Track, Playlist_Shared, Playlist_Solo, Playlist_Shared_Track, Playlist_Solo_Track
+from model import db, User, Track, User_Track, Playlist_Shared, Playlist_Solo, Playlist_Shared_Track, Playlist_Solo_Track, Invitation
 
 def create_user(username, password, explicit_content):
 
@@ -99,3 +99,21 @@ def create_playlist_solo_track(playlist, track):
     playlist_solo_track = Playlist_Solo_Track(playlist_id=playlist.id, track_id=track.id)
 
     return playlist_solo_track 
+
+def create_invitation(creating_user_id, joining_user_id, accepted):
+
+    invitation = Invitation(creating_user_id=creating_user_id, joining_user_id= joining_user_id, accepted=accepted)
+
+    return invitation
+
+def get_invitation_by_users(creating_user, joining_user):
+
+    invitation = db.session.query(Invitation).filter((Invitation.creating_user_id==creating_user.id) & (Invitation.joining_user_id==joining_user.id)).first()
+
+    return invitation
+
+def get_invitation_by_joining_user(joining_user):
+
+    invitation = db.session.query(Invitation).filter(Invitation.joining_user_id==joining_user.id).all()
+
+    return invitation

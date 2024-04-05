@@ -69,9 +69,11 @@ def login():
     
     return redirect('/')
 
-@app.route('/solo_playlist', methods = ['POST'])
-def create_solo_playlist():
+@app.route('/playlist', methods = ['POST'])
+def create_playlist():
 
+    other_user = request.form.get('other-user')
+    print(other_user)
     user = crud.get_user_by_id(session['current_user'])
     playlist = crud.create_solo_playlist(user.id, f'{user.username} Playlist', False)
     db.session.add(playlist)
@@ -89,7 +91,7 @@ def create_solo_playlist():
 
     user_seed_artists = crud.get_users_spotify_artists_ids(user)
     user_seed_tracks = crud.get_users_spotify_track_ids(user)
-    solo_playlist_url = API_BASE_URL + f'recommendations?seed_artists={choice(user_seed_artists)},{choice(user_seed_artists)},{choice(user_seed_artists)},{choice(user_seed_artists)}&seed_tracks={choice(user_seed_tracks)}&limit=50'
+    solo_playlist_url = API_BASE_URL + f'recommendations?seed_artists={choice(user_seed_artists)},{choice(user_seed_artists)},{choice(user_seed_artists)},{choice(user_seed_artists)},{choice(user_seed_artists)}&limit=50'
 
     response = requests.get(solo_playlist_url, headers=headers)
     playlist_tracks = response.json()
@@ -110,14 +112,46 @@ def create_solo_playlist():
                 db.session.add(playlist_track)
                 db.session.commit()
 
-    return render_template('solo_playlist.html', user=user, playlist=playlist)
+    return render_template('playlist.html', user=user, playlist=playlist)
 
 @app.route('/blend', methods = ['POST'])
 def create_blend():
+    
+    current_user = crud.get_user_by_id(session['current_user'])
+    other_user = crud.get_user_by_username(request.form.get('other-user'))
 
-    other_user = request.form.get('other-user')
+    if other_user is None:
+        flash('User not found—please invite user to create an account.')
+        return render_template('user_profile.html', user = current_user)
 
-    return redirect('/')
+    if other_user in current_user.sent_invitations:
+        flash('This user already has a pending blend invitation')
+        return render_template('user_profile.html', user = current_user)
+
+    invitation = crud.create_invitation(current_user.id,other_user.id,False)
+    db.session.add(invitation)
+    db.session.commit()
+   
+    flash('User successfully invite to join your blend.')
+
+    return render_template('user_profile.html', user = current_user)
+
+@app.route('/update_invitation/<user_id>', methods=["POST"])
+def update_invitation(user_id):
+    user = crud.get_user_by_id(session['current_user'])
+    other_user = crud.get_user_by_id(user_id)
+
+    value = request.form.get('invitation')
+    invitation = crud.get_invitation_by_users(other_user,user)
+
+    if value == 'accept':
+        flash(f'You accepted invitation from {other_user.username}')
+        invitation.accepted = True
+    if value == 'decline':
+        db.session.delete(invitation)
+        
+    db.session.commit()
+    return render_template('user_profile.html', user=user)
 
 
 
@@ -295,8 +329,11 @@ def get_access_token():
 
         session['access_token'] = new_token_info['access_token']
         session['expires_at'] = datetime.datetime.now().timestamp() + new_token_info['expires_in'] # 3600 seconds (1 day) 
-
-        return redirect('/get_user_data')
+       
+        if 'current_user' not in session: 
+            return redirect('/get_user_data')
+        else:
+            return redirect('/playlist')
 
 if __name__ == "__main__":
     app.debug = True

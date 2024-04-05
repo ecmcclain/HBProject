@@ -10,7 +10,7 @@
 </p>
 
 <h2> Create your own playlist! </h2>
-<form action = /solo_playlist method = 'POST'>  
+<form action = /playlist method = 'POST'>  
   <p>
     <button type="submit"> Create Playlist</button>
   </p>
@@ -24,6 +24,21 @@
   <input type="submit">
 
 </form>
+
+<h2>Sent Invitations to: </h2>
+{% for users in user.sent_invitations %}
+  <li>{{ users.username }}</li>
+{% endfor %}
+
+<h2> Invitations pending your approval: </h2>
+{% for users in user.received_invitations %}
+  <form action = "/update_invitation/{{ users.id }}" method = 'POST'>
+    <li>Invitation from {{ users.username }}
+      <button type="submit" name="invitation" value="accept">Accept</button>
+      <button type="submit" name="invitation" value="decline">Decline</button>
+    </li>
+  </form>
+{% endfor %}
 
 <h2>User's Tracks</h2>
 {% for track in user.tracks %}

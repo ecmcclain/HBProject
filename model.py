@@ -14,6 +14,8 @@ class User(db.Model):
     explicit_content = db.Column(db.Boolean)
 
     tracks = db.relationship('Track', secondary='user_tracks', back_populates='users')
+    sent_invitations = db.relationship('User', secondary='invitations', primaryjoin='and_(users.c.id==invitations.c.creating_user_id)', secondaryjoin='and_(invitations.c.joining_user_id==users.c.id)', back_populates='received_invitations')
+    received_invitations = db.relationship('User', secondary='invitations', primaryjoin='and_(users.c.id==invitations.c.joining_user_id)', secondaryjoin='and_(invitations.c.creating_user_id==users.c.id)',back_populates='sent_invitations')
 
 class Track(db.Model):
     """Data model for a track."""
@@ -84,6 +86,16 @@ class Playlist_Solo_Track(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     playlist_id = db.Column(db.Integer, db.ForeignKey('solo_playlists.id'))
     track_id = db.Column(db.Integer, db.ForeignKey('tracks.id'))
+
+class Invitation(db.Model):
+    """Data model for an invitaion"""
+
+    __tablename__ = 'invitations'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    creating_user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    joining_user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    accepted = db.Column(db.Boolean)
 
 def connect_to_db(app):
     """Connect the database to Flask app."""
