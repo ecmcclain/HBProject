@@ -29,12 +29,12 @@ class User(db.Model):
     
     @classmethod
     def get_pending_invitations(cls, current_user):
-        invitation_ids = db.session.query(Invitation.id).filter((current_user.id == Invitation.joining_user_id) & (Invitation.accepted==False)).all()
+        invitation_ids = db.session.query(Invitation.id).filter((current_user.id == Invitation.joining_user_id) & (Invitation.accepted==False) & (Invitation.declined ==False)).all()
         return [item for t in invitation_ids for item in t]
 
     @classmethod
     def get_accepted_invitations(cls, current_user):
-        invitation_ids = db.session.query(Invitation.id).filter((current_user.id == Invitation.joining_user_id) & (Invitation.accepted==True)).all()
+        invitation_ids = db.session.query(Invitation.id).filter((current_user.id == Invitation.joining_user_id) & (Invitation.accepted==True) | (current_user.id == Invitation.creating_user_id) & (Invitation.accepted==True)).all()
         return [item for t in invitation_ids for item in t]
 
     @classmethod
@@ -127,6 +127,7 @@ class Invitation(db.Model):
     creating_user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     joining_user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     accepted = db.Column(db.Boolean)
+    declined = db.Column(db.Boolean)
 
 def connect_to_db(app):
     """Connect the database to Flask app."""

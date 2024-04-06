@@ -46,7 +46,7 @@ def create_account():
     if crud.get_user_by_username(username) is not None:
         flash('Account already exists with that username. Please log in or use a different username.')
     else:
-        user = crud.create_user(username, password, explicit_content)
+        user = crud.create_user(username.lower(), password, explicit_content)
         db.session.add(user)
         db.session.commit()
         session['created_user_id'] = user.id
@@ -93,8 +93,8 @@ def create_solo_playlist():
         'Authorization': f"Bearer {session['access_token']}"
     }
 
-    user_seed_artists = crud.get_users_spotify_artists_ids(user)
-    user_seed_tracks = crud.get_users_spotify_track_ids(user)
+    user_seed_artists = crud.get_users_spotify_artists_ids(user)[:20]
+    user_seed_tracks = crud.get_users_spotify_track_ids(user)[:20]
     solo_playlist_url = API_BASE_URL + f'recommendations?seed_artists={choice(user_seed_artists)},{choice(user_seed_artists)},{choice(user_seed_artists)},{choice(user_seed_artists)},{choice(user_seed_artists)}&limit=50'
 
     response = requests.get(solo_playlist_url, headers=headers)
@@ -181,7 +181,7 @@ def create_blend():
         flash('This user already has a pending blend invitation')
         return render_template('user_profile.html', user = current_user)
 
-    invitation = crud.create_invitation(current_user.id,other_user.id,False)
+    invitation = crud.create_invitation(current_user.id,other_user.id,False,False)
     db.session.add(invitation)
     db.session.commit()
    
@@ -201,7 +201,8 @@ def update_invitation(invitation_id):
         flash(f'You accepted invitation from {other_user.username}')
         invitation.accepted = True
     if value == 'decline':
-        invitation.accepted = False
+        flash(f'You declined invitation from {other_user.username}')
+        invitation.declined = True
         
     db.session.commit()
     return render_template('user_profile.html', user=user)
@@ -334,9 +335,9 @@ def get_user_data():
         response = requests.get(top_tracks_url, headers=headers)
         top_tracks = response.json()
 
-        # top_tracks_url = top_tracks['next']
+        top_tracks_url = top_tracks['next']
         print(top_tracks['total'])
-        top_tracks_url=None
+        #top_tracks_url=None
 
         #Get all the tracks off of each of the user's shared tracks
         items = top_tracks["items"]

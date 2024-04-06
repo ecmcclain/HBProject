@@ -100,9 +100,9 @@ def create_playlist_solo_track(playlist, track):
 
     return playlist_solo_track 
 
-def create_invitation(creating_user_id, joining_user_id, accepted):
+def create_invitation(creating_user_id, joining_user_id, accepted, declined):
 
-    invitation = Invitation(creating_user_id=creating_user_id, joining_user_id= joining_user_id, accepted=accepted)
+    invitation = Invitation(creating_user_id=creating_user_id, joining_user_id= joining_user_id, accepted=accepted, declined=declined)
 
     return invitation
     
