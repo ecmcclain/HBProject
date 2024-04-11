@@ -117,3 +117,9 @@ def get_invitation_by_joining_user(joining_user):
     invitation = db.session.query(Invitation).filter(Invitation.joining_user_id==joining_user.id).all()
 
     return invitation
+
+def get_playlist_spotify_track_ids(playlist):
+
+    spotify_track_ids = [track.spotify_track_id for track in playlist.tracks]
+
+    return spotify_track_ids

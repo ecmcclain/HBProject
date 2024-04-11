@@ -3,18 +3,152 @@
 {% block title %}Play - Details{% endblock %}
 
 {% block body %}
+
 <h1>{{ playlist.title }}</h1>
 
 <p>
   Username: {{ user.username }}
 </p>
 
+<button id="loadPlaylist">Play All </button>
 
 <h2> Tracks</h2>
 <ol>
 {% for track in playlist.tracks %}
-  <li>{{ track.title }}, {{ track.artist }}</li>
+<li>     <button id="{{track.spotify_track_id}}">Play</button>      {{ track.title }}, {{ track.artist }}</li>
 {% endfor %}
 </ol>
+
+<button id="togglePlay">Play/Pause</button>
+<button id="togglePrevious">Previous</button>
+<button id="toggleNext">Next</button>
+
+<script src="https://sdk.scdn.co/spotify-player.js"></script>
+<script>
+  window.onSpotifyWebPlaybackSDKReady = () => {
+      const token = '{{ access_token }}';
+      const player = new Spotify.Player({
+          name: 'Web Playback SDK Quick Start Player',
+          getOAuthToken: cb => { cb(token); },
+          volume: 0.5
+      });
+      
+      // Ready
+      player.addListener('ready', ({ device_id }) => {
+          console.log('Ready with Device ID', device_id);
+
+          const connect_to_device = () => {
+            console.log("Changing to device");
+            let change_device = fetch("https://api.spotify.com/v1/me/player", {
+              method: "PUT",
+              body: JSON.stringify({
+                device_ids: [device_id],
+                play: false,
+              }),
+              headers: new Headers({
+                Authorization: "Bearer " + token,
+              }),
+            }).then((response) => console.log(response));
+            };
+          
+          connect_to_device();
+
+          const handle_shuffle = () => {
+            console.log("Handling shuffle");
+            let change_device = fetch("https://api.spotify.com/v1/me/player/shuffle", {
+              method: "PUT",
+              body: JSON.stringify({
+                state: false,
+                device_id: device_id,
+              }),
+              headers: new Headers({
+                Authorization: "Bearer " + token,
+              }),
+            }).then((response) => console.log(response));
+            };
+        
+          handle_shuffle();
+          });
+
+      // Not Ready
+      player.addListener('not_ready', ({ device_id }) => {
+          console.log('Device ID has gone offline', device_id);
+      });
+
+      player.addListener('initialization_error', ({ message }) => {
+          console.error(message);
+      });
+
+      player.addListener('authentication_error', ({ message }) => {
+          console.error(message);
+      });
+
+      player.addListener('account_error', ({ message }) => {
+          console.error(message);
+      });
+
+      document.getElementById('togglePlay').onclick = function() {
+        player.togglePlay();
+
+      };
+      
+      document.getElementById('togglePrevious').onclick = function() {
+        player.previousTrack();
+      };
+
+      document.getElementById('toggleNext').onclick = function() {
+        player.nextTrack();
+      };
+
+      const playlistTracks = JSON.parse('{{ playlist_tracks | tojson }}');
+
+      URIs = []
+      for (const track of playlistTracks) {
+        URIs.push('spotify:track:'+track);
+      }
+
+      document.getElementById('loadPlaylist').onclick = function() {
+        const update_queue = () => {
+            console.log("Updating the queue");
+            let update_queue = fetch("https://api.spotify.com/v1/me/player/play", {
+              method: "PUT",
+              body: JSON.stringify({
+                uris: URIs,
+              }),
+              headers: new Headers({
+                Authorization: "Bearer " + token,
+              }),
+            }).then((response) => console.log(response));
+            };
+        update_queue();
+
+        player.togglePlay();
+      };
+
+      for (const [index,track] of playlistTracks.entries()) {
+        const tempURIs = URIs.slice(index).concat(URIs.slice(0,index));
+        const trackID = track;
+        document.getElementById(trackID).onclick = function() {
+        const update_queue = () => {
+            console.log("Updating the queue");
+            let update_queue = fetch("https://api.spotify.com/v1/me/player/play", {
+              method: "PUT",
+              body: JSON.stringify({
+                uris: tempURIs,
+              }),
+              headers: new Headers({
+                Authorization: "Bearer " + token,
+              }),
+            }).then((response) => console.log(response));
+            };
+        update_queue();
+        player.togglePlay();
+      };
+      }
+
+
+      player.connect();
+  }
+</script>
 
 {% endblock %}
