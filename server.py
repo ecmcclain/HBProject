@@ -1,5 +1,5 @@
 # from jinja2 import StrictUndefined
-from flask import Flask, redirect, request, session, render_template, jsonify, flash
+from flask import Flask, redirect, request, session, render_template, jsonify, flash, json
 from model import connect_to_db, db
 from random import sample, choice
 
@@ -64,11 +64,26 @@ def login():
 
     user = crud.get_user_by_username(username)
 
+    #check that the access token exists and is not expired and authorize or refresh if so 
+    if 'access_token' not in session: 
+        return redirect('/authorize')
+    if datetime.datetime.now().timestamp() > session['expires_at']:
+        return redirect('/refresh-token')
+    headers = {
+        'Authorization': f"Bearer {session['access_token']}"
+    }
+
     #if the given username and password are valid, set the current user id in the cookie session and show the user's profile
     if user is not None:
         if user.password == password:
             flash('Logged in!')
             session['current_user'] = user.id
+
+            #get the user's Spotify user id
+            temp = requests.get(API_BASE_URL + 'me', headers=headers)
+            spotify_user_id = temp.json()['id']
+            session['spotify_user_id'] = spotify_user_id
+
             return render_template('user_profile.html', user = user)
     
     #if the given username and password are not valid, flash message and redirect to the homepage
@@ -153,7 +168,7 @@ def create_solo_playlist():
 
 @app.route('/playlist/<other_id>', methods = ['POST'])
 def create_shared_playlist(other_id):
-    """Create a solo playlist for the logged in user"""
+    """Create a shared playlist for the logged in user"""
 
     #get the session's current user and the other user for the shared playlist
     current_user = crud.get_user_by_id(session['current_user'])
@@ -187,8 +202,8 @@ def create_shared_playlist(other_id):
             user_seed_tracks = crud.get_users_spotify_track_ids(user)
 
             #request 50 recommended songs given 5 randomly chosen seed artists from the user's top 20 artists 
-            solo_playlist_url = API_BASE_URL + f'recommendations?seed_artists={choice(user_seed_artists)},{choice(user_seed_artists)},{choice(user_seed_artists)},{choice(user_seed_artists)},{choice(user_seed_artists)}&limit=50'
-            response = requests.get(solo_playlist_url, headers=headers)
+            shared_playlist_url = API_BASE_URL + f'recommendations?seed_artists={choice(user_seed_artists)},{choice(user_seed_artists)},{choice(user_seed_artists)},{choice(user_seed_artists)},{choice(user_seed_artists)}&limit=50'
+            response = requests.get(shared_playlist_url, headers=headers)
             playlist_tracks = response.json()
 
             #check that the given track from the recommended Spotify playlist is not already in the other user's tracks, and if not, add it to the playlist
@@ -260,8 +275,12 @@ def update_invitation(invitation_id):
     db.session.commit()
     return render_template('user_profile.html', user=user)
 
-@app.route('/playback', methods=['PUT'])
+
+@app.route('/export_playlist', methods=['POST'])
 def playback():
+
+    user = crud.get_user_by_id(session['current_user'])
+    print(session)
 
      #check that the access token exists and is not expired and authorize or refresh if so 
     if 'access_token' not in session: 
@@ -270,17 +289,41 @@ def playback():
         return redirect('/refresh-token')
     headers = {
         'Authorization': f"Bearer {session['access_token']}",
+        'Content-Type': 'application/json',
     }
 
-    device_id = request.json.get('device_id')
+    playlist_id = request.form.get('playlist_id_shared')
+    if playlist_id is None:
+        playlist_id = request.form.get('playlist_id_solo')
+        playlist = crud.get_solo_playlist_by_id(playlist_id)
+    else:
+        playlist= crud.get_shared_playlist_by_id(playlist_id)
+    spotify_user_id = session['spotify_user_id']
 
-    play_url = API_BASE_URL + f'me/play?device_id={device_id}'
-    response = requests.get(play_url, headers=headers)
-    print(play_url)
+    req_body = json.dumps({
+        'name': f'{playlist.title}',
+        'public': False,
+    })
+
+    export_url = API_BASE_URL + f'users/{spotify_user_id}/playlists'
+    response = requests.post(export_url, data=req_body, headers=headers)
     play = response.json()
-    print(play)
 
-    return play
+    spotify_playlist_id = play['id']
+
+    playlist_spotify_track_ids = crud.get_playlist_spotify_track_ids(playlist)
+    playlist_spotify_track_id = ['spotify:track:' + id for id in  playlist_spotify_track_ids]
+
+    req_body = json.dumps({
+        'uris': playlist_spotify_track_id,
+    })
+
+    add_tracks_url = API_BASE_URL + f'playlists/{spotify_playlist_id}/tracks'
+    response = requests.post(add_tracks_url, data=req_body, headers=headers)
+    play = response.json()
+    flash('Playlist exported to Spotify.')
+
+    return render_template('playlist.html', user=user, playlist=playlist, access_token = session['access_token'], playlist_tracks = crud.get_playlist_spotify_track_ids(playlist))
 
 
 
@@ -290,7 +333,7 @@ def playback():
 def authorize():
     """Complete Spotify's OAuth for the user"""
 
-    scope = 'user-read-private user-read-email playlist-read-private user-library-read user-top-read streaming user-modify-playback-state'
+    scope = 'user-read-private user-read-email playlist-read-private user-library-read user-top-read streaming user-modify-playback-state playlist-modify-public playlist-modify-private'
 
     params = {
         'client_id': CLIENT_ID,

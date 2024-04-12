@@ -88,6 +88,18 @@ def return_all_solo_playlists():
 
     return solo_playlists
 
+def get_solo_playlist_by_id(playlist_id):
+
+    solo_playlist = db.session.query(Playlist_Solo).filter(Playlist_Solo.id == playlist_id).first()
+
+    return solo_playlist
+
+def get_shared_playlist_by_id(playlist_id):
+
+    shared_playlist = db.session.query(Playlist_Shared).filter(Playlist_Shared.id == playlist_id).first()
+
+    return shared_playlist
+
 def create_playlist_shared_track(playlist, track):
 
     playlist_shared_track = Playlist_Shared_Track(playlist_id=playlist.id, track_id=track.id)

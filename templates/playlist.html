@@ -23,6 +23,20 @@
 <button id="togglePrevious">Previous</button>
 <button id="toggleNext">Next</button>
 
+<h2> Export Playlist to Spotify! </h2>
+<form action = /export_playlist method = 'POST'> 
+  {% if '&' in playlist.title %} 
+  <p>
+    <button type="submit" name = 'playlist_id_shared' value = '{{ playlist.id }}'> Export Playlist</button>
+  </p>
+  {% endif %}
+  {% if '&' not in playlist.title %} 
+  <p>
+    <button type="submit" name = 'playlist_id_solo' value = '{{ playlist.id }}'> Export Playlist</button>
+  </p>
+  {% endif %}
+</form>
+
 <script src="https://sdk.scdn.co/spotify-player.js"></script>
 <script>
   window.onSpotifyWebPlaybackSDKReady = () => {
