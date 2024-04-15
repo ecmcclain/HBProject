@@ -48,6 +48,20 @@ class User(db.Model):
         other_user = db.session.query(User).filter(User.id == other_user_id).first()
         return other_user
 
+    @classmethod
+    def get_solo_playlists(cls, current_user):
+        playlist = db.session.query(Playlist_Solo.id, Playlist_Solo.title).filter((current_user.id == Playlist_Solo.creating_user_id)).all()
+        print(playlist)
+        return playlist
+        # print([item for t in playlist for item in t])
+        # return [item for t in playlist for item in t]
+
+    @classmethod
+    def get_shared_playlists(cls, current_user):
+        playlist = db.session.query(Playlist_Shared.id, Playlist_Shared.title).filter((current_user.id == Playlist_Shared.joining_user_id) | (current_user.id == Playlist_Shared.creating_user_id)).all()
+        print(playlist)
+        return playlist
+
 class Track(db.Model):
     """Data model for a track."""
 

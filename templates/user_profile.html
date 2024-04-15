@@ -3,60 +3,95 @@
 {% block title %}User - Details{% endblock %}
 
 {% block body %}
-<h1>User Profile</h1>
+<div class="container-fluid"> 
+  <div class="row"> 
+    <p> Profile</p>
 
-<p>
-  Username: {{ user.username }}
-</p>
+    <h1>
+      {{ user.username }}
+    </h1>
+  </div>
 
-<h2> Create your own playlist! </h2>
-<form action = /playlist method = 'POST'>  
-  <p>
-    <button type="submit"> Create Playlist</button>
-  </p>
-</form>
+  <div class="row"> 
+    {% if user.get_solo_playlists(user) == [] and user.get_shared_playlists(user) == [] %}
+      <h3>No playlists to display yet, invite other users to create a shared playlist or create your own!</h3>
+        <form action = /playlist method = 'POST'>  
+          <p>
+            <button type="submit"> Create Solo Playlist</button>
+          </p>
+        </form>
+    {% else %}
+      <h3> Playlists </h3>
+      <p>Select a playlist to start listening </p>
+      {% for playlist in user.get_solo_playlists(user) %}
+        <div class="col-3">
+          <form action = "/view_solo_playlist/{{ playlist[0] }}">
+            <button type="submit" name="invitation" value="accept">{{ playlist[1] }}</button>
+          </form>
+        </div>
+      {% endfor %}
 
-<h2>Create a blend with another user</h2>
-<form action = /blend method = 'POST'>  
-  <p>
-    Please the other user's username: <input type="text" name="other-user">
-  </p>
-  <input type="submit">
+      {% for playlist in user.get_shared_playlists(user) %}
+          <div class="col-3">
+            <form action = "/view_shared_playlist/{{ playlist[0] }}">
+              <button type="submit" name="invitation" value="accept">{{ playlist[1] }}</button>
+            </form>
+          </div>
+      {% endfor %}
+      {% if user.get_solo_playlists(user) == [] %}
+        <h4> Create your own solo playlist! </h4>
+        <form action = /playlist method = 'POST'>  
+          <p>
+            <button type="submit"> Create Solo Playlist</button>
+          </p>
+        </form>
+      {% endif %}
+    {% endif %}
+    
+    
+    <div class="row">
+      <h3>Create a blend with another user</h3>
+      <form action = /blend method = 'POST'>  
+        <p>
+          Please the other user's username: <input type="text" name="other-user">
+          <input type="submit">
+        </p>
+      </form>
+    </div>
 
-</form>
+    <div class="row">
+      <div class="col">
+      {% if user.get_pending_invitations(user) != [] %}
+      <h3> Invitations pending your approval: </h3>
+      {% for invitation_id in user.get_pending_invitations(user) %}
+        <form action = "/update_invitation/{{ invitation_id }}" method = 'POST'>
+          <li>Invitation from {{ user.get_other_user_by_invitation_id(invitation_id).username }}
+            <button type="submit" name="invitation" value="accept">Accept</button>
+            <button type="submit" name="invitation" value="decline">Decline</button>
+          </li>
+        </form>
+      {% endfor %}
+      {% endif %}
+      </div>
 
-<h2>Sent Invitations to: </h2>
-{% for users in user.sent_invitations %}
-  <li>{{ users.username }}</li>
-{% endfor %}
+      <div class="col">
 
-<h2> Invitations pending your approval: </h2>
-{% for invitation_id in user.get_pending_invitations(user) %}
-  <form action = "/update_invitation/{{ invitation_id }}" method = 'POST'>
-    <li>Invitation from {{ user.get_other_user_by_invitation_id(invitation_id).username }}
-      <button type="submit" name="invitation" value="accept">Accept</button>
-      <button type="submit" name="invitation" value="decline">Decline</button>
-    </li>
-  </form>
-
-{% endfor %}
-
-<h2> Accepted Invitations: </h2>
-{% for invitation_id in user.get_accepted_invitations(user) %}
-  <form action = "/playlist/{{user.get_other_user_by_invitation_id(invitation_id).id}}" method = 'POST'>
-    Playlist with {{user.get_other_user_by_invitation_id(invitation_id).username}}
-    <button type="submit" name="invitation" value="accept">View Playlist</button>
-  </form>
-{% endfor %}
+      <h3>Sent Invitations to: </h3>
+      {% for users in user.sent_invitations %}
+        <li>{{ users.username }}</li>
+      {% endfor %}
+     </div>
+  </div>
 
 
-<h2>User's Tracks</h2>
-{% for track in user.tracks %}
-  <li>{{ track.title }}</li>
-{% endfor %}
+    <h3>User's Tracks</h3>
+    {% for track in user.tracks %}
+      <li>{{ track.title }}, {{ track.artist }}</li>
+    {% endfor %}
+    <br>
 
-<br>
-
-<a href='/authorize'>Refresh data?</a>
+    <a href='/authorize'>Refresh data?</a>
+  </div>
+</div>
 
 {% endblock %}

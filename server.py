@@ -57,27 +57,27 @@ def create_account():
 
 @app.route('/login', methods = ['POST'])
 def login():
-    """Log a already created user into the cookie session"""
+    """Log an already created user into the cookie session"""
 
     username = request.form.get('username')
     password = request.form.get('password')
 
     user = crud.get_user_by_username(username)
 
-    #check that the access token exists and is not expired and authorize or refresh if so 
-    if 'access_token' not in session: 
-        return redirect('/authorize')
-    if datetime.datetime.now().timestamp() > session['expires_at']:
-        return redirect('/refresh-token')
-    headers = {
-        'Authorization': f"Bearer {session['access_token']}"
-    }
-
     #if the given username and password are valid, set the current user id in the cookie session and show the user's profile
     if user is not None:
         if user.password == password:
             flash('Logged in!')
             session['current_user'] = user.id
+
+            #check that the access token exists and is not expired and authorize or refresh if so 
+            if 'access_token' not in session: 
+                return redirect('/authorize')
+            if datetime.datetime.now().timestamp() > session['expires_at']:
+                return redirect('/refresh-token')
+            headers = {
+                'Authorization': f"Bearer {session['access_token']}"
+            }
 
             #get the user's Spotify user id
             temp = requests.get(API_BASE_URL + 'me', headers=headers)
@@ -226,6 +226,33 @@ def create_shared_playlist(other_id):
     
     return render_template('playlist.html', user=user, playlist=playlist, access_token = session['access_token'],playlist_tracks = crud.get_playlist_spotify_track_ids(playlist))
 
+@app.route('/view_solo_playlist/<playlist_id>')
+def view_solo_playlist(playlist_id):
+    """View already created playlist"""
+    #get the cookie session's current user
+    user = crud.get_user_by_id(session['current_user'])
+
+    #create a solo playlist and add it to the session
+    playlist = crud.get_solo_playlist_by_id(playlist_id)
+    
+    #display the playlist
+    print(jsonify(crud.get_playlist_spotify_track_ids(playlist)))
+    return render_template('playlist.html', user=user, playlist=playlist, access_token = session['access_token'], playlist_tracks = crud.get_playlist_spotify_track_ids(playlist))
+
+@app.route('/view_shared_playlist/<playlist_id>')
+def view_shared_playlist(playlist_id):
+    """View already created playlist"""
+    #get the cookie session's current user
+    user = crud.get_user_by_id(session['current_user'])
+
+    #create a solo playlist and add it to the session
+    playlist = crud.get_shared_playlist_by_id(playlist_id)
+    
+    #display the playlist
+    print(jsonify(crud.get_playlist_spotify_track_ids(playlist)))
+    return render_template('playlist.html', user=user, playlist=playlist, access_token = session['access_token'], playlist_tracks = crud.get_playlist_spotify_track_ids(playlist))
+
+
 @app.route('/blend', methods = ['POST'])
 def create_blend():
     """Create an invitation from one user to another"""
@@ -269,11 +296,13 @@ def update_invitation(invitation_id):
     if value == 'accept':
         flash(f'You accepted invitation from {other_user.username}')
         invitation.accepted = True
+        db.session.commit()
+        return redirect(f'/playlist/{other_user.id}', code=307)
     if value == 'decline':
         flash(f'You declined invitation from {other_user.username}')
         invitation.declined = True
-    db.session.commit()
-    return render_template('user_profile.html', user=user)
+        db.session.commit()
+        return render_template('user_profile.html', user=user)
 
 
 @app.route('/export_playlist', methods=['POST'])
@@ -458,7 +487,7 @@ def get_access_token():
         if 'current_user' not in session: 
             return redirect('/get_user_data')
         else:
-            return redirect('/playlist')
+            return redirect('/profile')
 
 
 if __name__ == "__main__":

@@ -4,38 +4,56 @@
 
 {% block body %}
 
+<nav class = "navbar fixed-bottom">
+  <div class="container">
+    <div class="btn-group" role="group" id="navigate" style="display: none;">
+      <button type="button" id="togglePrevious">Previous</button>
+      <button type="button" id="togglePlay">Pause</button>
+      <button type="button" id="toggleNext">Next</button>
+    </div>
+  </div>
+</nav>
+
 <h1>{{ playlist.title }}</h1>
 
-<p>
-  Username: {{ user.username }}
-</p>
 
-<button id="loadPlaylist">Play All </button>
+<a href='/refresh-token' id="re-auth" style="display: none;">Please click here to re-authenticate Spotify.</a>
 
-<h2> Tracks</h2>
-<ol>
-{% for track in playlist.tracks %}
-<li>     <button id="{{track.spotify_track_id}}">Play</button>      {{ track.title }}, {{ track.artist }}</li>
-{% endfor %}
-</ol>
+<div class="btn-group navbar-brand" role="group">
+  <button id="loadPlaylist" class="btn btn-outline-primary">Play All </button>
+</div>
+<div class="btn-group navbar-brand" role="group">
+  <form action = /export_playlist method = 'POST'> 
+    {% if '&' in playlist.title %} 
+      <button type="submit" class="btn btn-outline-primary" name="playlist_id_shared" value="{{ playlist.id }}"> Export Playlist to Spotify</button>
+    {% endif %}
+    {% if '&' not in playlist.title %} 
+      <button type="submit" class="btn btn-outline-primary" name="playlist_id_solo" value="{{ playlist.id }}"> Export Playlist to Spotify</button>
+    {% endif %}
+  </form>
+</div>
 
-<button id="togglePlay">Play/Pause</button>
-<button id="togglePrevious">Previous</button>
-<button id="toggleNext">Next</button>
 
-<h2> Export Playlist to Spotify! </h2>
-<form action = /export_playlist method = 'POST'> 
-  {% if '&' in playlist.title %} 
-  <p>
-    <button type="submit" name = 'playlist_id_shared' value = '{{ playlist.id }}'> Export Playlist</button>
-  </p>
-  {% endif %}
-  {% if '&' not in playlist.title %} 
-  <p>
-    <button type="submit" name = 'playlist_id_solo' value = '{{ playlist.id }}'> Export Playlist</button>
-  </p>
-  {% endif %}
-</form>
+<div class="fluid-container">
+  <div class="row">
+    
+    <div class="col">
+      <h2> Tracks</h2>
+      <ol>
+      {% for track in playlist.tracks %}
+      <li>     <button id="{{track.spotify_track_id}}">Play</button>      {{ track.title }}, {{ track.artist }}</li>
+      {% endfor %}
+      </ol>
+    </div>
+
+</div>  
+
+<br>
+<br>
+<br>
+
+
+</div>
 
 <script src="https://sdk.scdn.co/spotify-player.js"></script>
 <script>
@@ -95,6 +113,7 @@
 
       player.addListener('authentication_error', ({ message }) => {
           console.error(message);
+          document.getElementById('re-auth').style.display = "block";
       });
 
       player.addListener('account_error', ({ message }) => {
@@ -103,15 +122,35 @@
 
       document.getElementById('togglePlay').onclick = function() {
         player.togglePlay();
-
+        const play = document.getElementById('togglePlay');
+        if (play.innerHTML == "Play"){
+          play.childNodes[0].nodeValue = "Pause";
+        }
+        else {
+          play.childNodes[0].nodeValue = "Play";
+        }
       };
       
       document.getElementById('togglePrevious').onclick = function() {
-        player.previousTrack();
+        player.previousTrack()
+        const play = document.getElementById('togglePlay');
+        if (play.innerHTML == "Play"){
+          play.childNodes[0].nodeValue = "Pause";
+        }
+        else {
+          play.childNodes[0].nodeValue = "Play";
+        }
       };
 
       document.getElementById('toggleNext').onclick = function() {
         player.nextTrack();
+        const play = document.getElementById('togglePlay');
+        if (play.innerHTML == "Play"){
+          play.childNodes[0].nodeValue = "Pause";
+        }
+        else {
+          play.childNodes[0].nodeValue = "Play";
+        }
       };
 
       const playlistTracks = JSON.parse('{{ playlist_tracks | tojson }}');
@@ -136,6 +175,9 @@
             };
         update_queue();
 
+        const navigate=document.getElementById('navigate');
+        navigate.style.display = "block";
+
         player.togglePlay();
       };
 
@@ -156,6 +198,10 @@
             }).then((response) => console.log(response));
             };
         update_queue();
+
+        const navigate=document.getElementById('navigate');
+        navigate.style.display = "block";
+
         player.togglePlay();
       };
       }

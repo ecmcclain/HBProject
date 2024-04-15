@@ -18,7 +18,7 @@
   </head>
   <body>
      <!-- Static navbar -->
-     <nav class="navbar navbar-expand-lg navbar-light bg-light">
+     <nav class="navbar fixed-top navbar-expand-sm navbar-light bg-light">
       <a class="navbar-brand mb-2 ms-2" href="/">Lemme Show You a Song</a>
       <button
         class="navbar-toggler"
@@ -45,16 +45,26 @@
         </ul>
       </div>
     </nav>
+    <br>
+    <br>
+    <br>
+
     
     {% for msg in get_flashed_messages() %}
       <p class="flash-msg">
         {{ msg }}
       </p>
     {% endfor %}
+
     {% block body %}{% endblock %}
 
     {% block after_body %}{% endblock %}
 
     {% block js %}{% endblock %}
+    <script 
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" 
+    integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" 
+    crossorigin="anonymous">
+    </script>
   </body>
 </html>
