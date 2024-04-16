@@ -4,54 +4,88 @@
 
 {% block body %}
 
-<nav class = "navbar fixed-bottom">
-  <div class="container">
-    <div class="btn-group" role="group" id="navigate" style="display: none;">
-      <button type="button" id="togglePrevious">Previous</button>
-      <button type="button" id="togglePlay">Pause</button>
-      <button type="button" id="toggleNext">Next</button>
+<div class="container-fluid" id="navigate" style="display: none;">
+  <nav class = "navbar fixed-bottom bg-light">
+    <div class="col-3">
+      <span class="navbar-text" id="track" style="font-size:90%">
+      </span>
+    </div>
+    <div class="col-3 align-content-center">
+      <div class="btn-group" role="group">
+        <button type="button" id="togglePrevious"><i class="bi bi-skip-backward-fill"></i></button>
+        <button type="button" id="togglePlay"><i class="bi bi-pause"></i></button>
+        <button type="button" id="toggleNext"><i class="bi bi-skip-forward-fill"></i></button>
+      </div>
+    </div>
+    <div class="col-3">
+    <span></span>
+  </div>
+  </nav>
+</div>
+
+<div class="jumbotron jumbotron-fluid">
+  <div class="container-fluid">
+    <h1 class="display-4">{{ playlist.title }}</h1>
+      <div class="btn-group navbar-brand" role="group">
+        <button id="loadPlaylist" class="btn btn-outline-primary">Play All </button>
+      </div>
+      <div class="btn-group navbar-brand" role="group">
+        <form action = '/export_playlist' method = 'POST'> 
+          {% if '&' in playlist.title %} 
+            <button type="submit" class="btn btn-outline-primary" name="playlist_id_shared" value="{{ playlist.id }}"> Export Playlist to Spotify</button>
+          {% endif %}
+          {% if '&' not in playlist.title %} 
+            <button type="submit" class="btn btn-outline-primary" name="playlist_id_solo" value="{{ playlist.id }}"> Export Playlist to Spotify</button>
+          {% endif %}
+        </form>
+      </div>
+    </div>
+</div>
+
+<div class="modal" tabindex="-1" id="re-auth" style="display: none;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Authenticate</h5>
+      </div>
+      <div class="modal-body">
+        <p>Please re-authenticate Spotify.</p>
+      </div>
+      <div class="modal-footer">
+        <form action = '/refresh-token'>
+          <button type="submit" class="btn btn-primary">Authenticate</button>
+      </form>
+      </div>
     </div>
   </div>
-</nav>
-
-<h1>{{ playlist.title }}</h1>
-
-
-<a href='/refresh-token' id="re-auth" style="display: none;">Please click here to re-authenticate Spotify.</a>
-
-<div class="btn-group navbar-brand" role="group">
-  <button id="loadPlaylist" class="btn btn-outline-primary">Play All </button>
-</div>
-<div class="btn-group navbar-brand" role="group">
-  <form action = /export_playlist method = 'POST'> 
-    {% if '&' in playlist.title %} 
-      <button type="submit" class="btn btn-outline-primary" name="playlist_id_shared" value="{{ playlist.id }}"> Export Playlist to Spotify</button>
-    {% endif %}
-    {% if '&' not in playlist.title %} 
-      <button type="submit" class="btn btn-outline-primary" name="playlist_id_solo" value="{{ playlist.id }}"> Export Playlist to Spotify</button>
-    {% endif %}
-  </form>
 </div>
 
-
-<div class="fluid-container">
-  <div class="row">
-    
-    <div class="col">
-      <h2> Tracks</h2>
-      <ol>
+<div class="container-fluid">
+  <table class="table table-sm">
+    <thead>
+      <tr>
+        <th scope="col-2">#</th>
+        <th scope="col-5">Title</th>
+        <th scope="col-5">Artist</th>
+      </tr>
+    </thead>
+    <tbody>
       {% for track in playlist.tracks %}
-      <li>     <button id="{{track.spotify_track_id}}">Play</button>      {{ track.title }}, {{ track.artist }}</li>
+      <tr class="other_text {{loop.index}}" id="{{track.spotify_track_id}}text">
+        <th scope='row'> 
+          <button id="{{track.spotify_track_id}}" class="play">{{loop.index}}</button> 
+        </th>
+        <td>{{ track.title }}</td>
+        <td>{{ track.artist }}</td>
+      </tr>
       {% endfor %}
-      </ol>
-    </div>
-
-</div>  
+    </tbody>
+  </table>
+</div>
 
 <br>
 <br>
 <br>
-
 
 </div>
 
@@ -120,39 +154,64 @@
           console.error(message);
       });
 
+      player.addListener('player_state_changed', ({
+        track_window: { current_track}
+      }) => {
+        let name = current_track['name'];
+        let artist = current_track['artists'][0]['name'];
+        let id_current = current_track['id'];
+        document.getElementById('track').innerHTML = '<b>'+name+'</b><br>'+artist;
+        for (const element of document.getElementsByClassName('other_text')) {
+          element.style.background = 'white';
+        }
+        document.getElementById(id_current+'text').style.background = 'green';
+        console.log('Currently Track', current_track);
+      });
+
+      player.connect();
+
       document.getElementById('togglePlay').onclick = function() {
         player.togglePlay();
         const play = document.getElementById('togglePlay');
-        if (play.innerHTML == "Play"){
-          play.childNodes[0].nodeValue = "Pause";
+        if (play.innerHTML ==  '<i class="bi bi-play-fill"></i>'){
+          play.innerHTML= '<i class="bi bi-pause"></i>';
         }
         else {
-          play.childNodes[0].nodeValue = "Play";
+          play.innerHTML=  '<i class="bi bi-play-fill"></i>';
         }
       };
       
       document.getElementById('togglePrevious').onclick = function() {
-        player.previousTrack()
+        player.previousTrack();
+
         const play = document.getElementById('togglePlay');
-        if (play.innerHTML == "Play"){
-          play.childNodes[0].nodeValue = "Pause";
+        if (play.innerHTML == '<i class="bi bi-play-fill"></i>'){
+          play.innerHTML= '<i class="bi bi-pause"></i>';
         }
-        else {
-          play.childNodes[0].nodeValue = "Play";
-        }
+        
       };
 
       document.getElementById('toggleNext').onclick = function() {
         player.nextTrack();
         const play = document.getElementById('togglePlay');
-        if (play.innerHTML == "Play"){
-          play.childNodes[0].nodeValue = "Pause";
+        if (play.innerHTML ==  '<i class="bi bi-play-fill"></i>'){
+          play.innerHTML = '<i class="bi bi-pause"></i>';
         }
-        else {
-          play.childNodes[0].nodeValue = "Play";
-        }
+        
       };
 
+      for (const element of document.getElementsByClassName('play')) {
+        const number = element.innerHTML;
+        const container = document.getElementsByClassName(number);
+        for (const col of container) {
+          col.onmouseover = function() {
+            console.log('MOUSEOVER');
+            element.innerHTML = '<i class="bi bi-play-fill"></i>';
+          };
+          col.onmouseleave = function() {
+            element.innerHTML = number;
+          }}
+        }
       const playlistTracks = JSON.parse('{{ playlist_tracks | tojson }}');
 
       URIs = []
@@ -174,11 +233,12 @@
             }).then((response) => console.log(response));
             };
         update_queue();
+        
+        player.togglePlay();
 
         const navigate=document.getElementById('navigate');
         navigate.style.display = "block";
 
-        player.togglePlay();
       };
 
       for (const [index,track] of playlistTracks.entries()) {
@@ -198,16 +258,13 @@
             }).then((response) => console.log(response));
             };
         update_queue();
+        
+        player.togglePlay();
 
         const navigate=document.getElementById('navigate');
         navigate.style.display = "block";
-
-        player.togglePlay();
       };
       }
-
-
-      player.connect();
   }
 </script>
 

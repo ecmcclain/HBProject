@@ -3,39 +3,51 @@
 {% block title %}User - Details{% endblock %}
 
 {% block body %}
-<div class="container-fluid"> 
-  <div class="row"> 
-    <p> Profile</p>
 
-    <h1>
-      {{ user.username }}
-    </h1>
+<div class="jumbotron jumbotron-fluid">
+  <div class="container-fluid">
+    <p class="lead">Profile</p>
+    <h1 class="display-4">{{ user.username }}</h1>
   </div>
+</div>
+
+<div class="container-fluid"> 
 
   <div class="row"> 
     {% if user.get_solo_playlists(user) == [] and user.get_shared_playlists(user) == [] %}
-      <h3>No playlists to display yet, invite other users to create a shared playlist or create your own!</h3>
-        <form action = /playlist method = 'POST'>  
-          <p>
-            <button type="submit"> Create Solo Playlist</button>
-          </p>
-        </form>
+    <h3> Playlists </h3>
+      <p>No playlists to display yet, invite other users or create your own!</p>
+    <div class="col-3">
+      <div class="card">
+        <div class="card-body">
+          <form action="/playlist" method="POST" >
+          <button type='submit' class="btn btn-primary">Create Solo Playlist</button>
+          </form>
+        </div>
+      </div>
+    </div>
     {% else %}
       <h3> Playlists </h3>
       <p>Select a playlist to start listening </p>
       {% for playlist in user.get_solo_playlists(user) %}
-        <div class="col-3">
-          <form action = "/view_solo_playlist/{{ playlist[0] }}">
-            <button type="submit" name="invitation" value="accept">{{ playlist[1] }}</button>
-          </form>
+        <div class="col">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">{{ playlist[1] }}</h5>
+              <a href="/view_solo_playlist/{{ playlist[0] }}" class="btn btn-primary" name="invitation" value="accept">View Playlist</a>
+            </div>
+          </div>
         </div>
       {% endfor %}
 
       {% for playlist in user.get_shared_playlists(user) %}
-          <div class="col-3">
-            <form action = "/view_shared_playlist/{{ playlist[0] }}">
-              <button type="submit" name="invitation" value="accept">{{ playlist[1] }}</button>
-            </form>
+          <div class="col">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">{{ playlist[1] }}</h5>
+                <a href="/view_solo_playlist/{{ playlist[0] }}" class="btn btn-primary" name="invitation" value="accept">View Playlist</a>
+              </div>
+            </div>
           </div>
       {% endfor %}
       {% if user.get_solo_playlists(user) == [] %}
@@ -47,50 +59,97 @@
         </form>
       {% endif %}
     {% endif %}
-    
-    
-    <div class="row">
-      <h3>Create a blend with another user</h3>
-      <form action = /blend method = 'POST'>  
-        <p>
-          Please the other user's username: <input type="text" name="other-user">
-          <input type="submit">
-        </p>
-      </form>
-    </div>
-
-    <div class="row">
-      <div class="col">
-      {% if user.get_pending_invitations(user) != [] %}
-      <h3> Invitations pending your approval: </h3>
-      {% for invitation_id in user.get_pending_invitations(user) %}
-        <form action = "/update_invitation/{{ invitation_id }}" method = 'POST'>
-          <li>Invitation from {{ user.get_other_user_by_invitation_id(invitation_id).username }}
-            <button type="submit" name="invitation" value="accept">Accept</button>
-            <button type="submit" name="invitation" value="decline">Decline</button>
-          </li>
-        </form>
-      {% endfor %}
-      {% endif %}
-      </div>
-
-      <div class="col">
-
-      <h3>Sent Invitations to: </h3>
-      {% for users in user.sent_invitations %}
-        <li>{{ users.username }}</li>
-      {% endfor %}
-     </div>
   </div>
 
+    <br>
+  <div class="row"> 
+    <div class="accordion" id="accordionExample">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingOne">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+            <b>Create a Playlist with Another User</b>
+          </button>
+        </h2>
+        <div id="collapseOne" class="accordion-collapse open" aria-labelledby="headingOne">
+          <div class="accordion-body">
+            <div class="row">
+              <form action = /blend method = 'POST'>  
+                <p>
+                  Please invite the other user by username: <input type="text" name="other-user">
+                  <input type="submit" value="Send Invitation">
+                </p>
+              </form>
+            </div>     
+           </div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingTwo">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+            <b>Review Pending Invitations</b>
+          </button>
+        </h2>
+        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo">
+          <div class="accordion-body">
+            {% if user.get_pending_invitations(user) != [] %}
+            {% for invitation_id in user.get_pending_invitations(user) %}
+              <form action = "/update_invitation/{{ invitation_id }}" method = 'POST'>
+                <li>Invitation from {{ user.get_other_user_by_invitation_id(invitation_id).username }}
+                  <button type="submit" name="invitation" value="accept">Accept</button>
+                  <button type="submit" name="invitation" value="decline">Decline</button>
+                </li>
+              </form>
+            {% endfor %}
+            {% else %}
+              You are up to date! No pending invitations.
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingThree">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+            <b>View Sent Invitations</b>
+          </button>
+        </h2>
+        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree">
+          <div class="accordion-body">
+            Invitations sent to: 
+            <ul>
+            {% for users in user.sent_invitations %}
+              <li>{{ users.username }}</li>
+            {% endfor %}
+          </ul>
+           </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingFour">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+              <b>View Your Top Tracks</b>
+            </button>
+          </h2>
+          <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour">
+            <div class="accordion-body">
+              <ol>
+              {% for track in user.tracks %}
+                <li>{{ track.title }}, {{ track.artist }}</li>
+              {% endfor %}
+            </ol>
+             </div>
+            </div>
+          </div>
+      </div>
+    </div>
 
-    <h3>User's Tracks</h3>
-    {% for track in user.tracks %}
-      <li>{{ track.title }}, {{ track.artist }}</li>
-    {% endfor %}
+    <br>
+    
+    <a href='/authorize'>Refresh Spotify data?</a>
+
+    <br>
     <br>
 
-    <a href='/authorize'>Refresh data?</a>
+
   </div>
 </div>
 

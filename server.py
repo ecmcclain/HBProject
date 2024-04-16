@@ -484,10 +484,9 @@ def get_access_token():
         session['access_token'] = new_token_info['access_token']
         session['expires_at'] = datetime.datetime.now().timestamp() + new_token_info['expires_in'] # 3600 seconds (1 day) 
        
-        if 'current_user' not in session: 
-            return redirect('/get_user_data')
-        else:
-            return redirect('/profile')
+    if 'current_user' not in session: 
+        return redirect('/get_user_data')
+    return redirect('/profile')
 
 
 if __name__ == "__main__":
