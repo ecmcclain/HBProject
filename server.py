@@ -164,7 +164,7 @@ def create_solo_playlist():
     
     #display the playlist
     print(jsonify(crud.get_playlist_spotify_track_ids(playlist)))
-    return render_template('playlist.html', user=user, playlist=playlist, access_token = session['access_token'], playlist_tracks = crud.get_playlist_spotify_track_ids(playlist))
+    return redirect(f'/view_solo_playlist/{playlist.id}')
 
 @app.route('/playlist/<other_id>', methods = ['POST'])
 def create_shared_playlist(other_id):
@@ -224,7 +224,7 @@ def create_shared_playlist(other_id):
                         db.session.commit()
     #display the playlist
     
-    return render_template('playlist.html', user=user, playlist=playlist, access_token = session['access_token'],playlist_tracks = crud.get_playlist_spotify_track_ids(playlist))
+    return redirect(f'/view_shared_playlist/{playlist.id}')
 
 @app.route('/view_solo_playlist/<playlist_id>')
 def view_solo_playlist(playlist_id):
@@ -353,6 +353,24 @@ def playback():
     flash('Playlist exported to Spotify.')
 
     return render_template('playlist.html', user=user, playlist=playlist, access_token = session['access_token'], playlist_tracks = crud.get_playlist_spotify_track_ids(playlist))
+
+@app.route('/rename_solo_playlist/<playlist_id>', methods=['POST'])
+def rename_solo_playlist(playlist_id):
+    new_name = request.form.get('new_name')
+    playlist = crud.get_solo_playlist_by_id(playlist_id)
+    playlist.title = new_name
+    db.session.commit()
+    print(playlist.title)
+    return redirect(f'/view_solo_playlist/{playlist_id}')
+
+@app.route('/rename_shared_playlist/<playlist_id>', methods=['POST'])
+def rename_shared_playlist(playlist_id):
+    new_name = request.form.get('new_name')
+    playlist = crud.get_shared_playlist_by_id(playlist_id)
+    playlist.title = new_name
+    db.session.commit()
+    print(playlist.title)
+    return redirect(f'/view_shared_playlist/{playlist_id}')
 
 
 

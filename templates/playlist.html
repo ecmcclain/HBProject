@@ -25,21 +25,53 @@
 
 <div class="jumbotron jumbotron-fluid">
   <div class="container-fluid">
-    <h1 class="display-4">{{ playlist.title }}</h1>
+    <h1 class="display-4" style="display: flex; align-items: center;">{{ playlist.title }}
+      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rename" id="edit_playlist">
+        <i class="bi bi-pen"></i>
+      </button>
+      <span id = 'edit_info' style="display: none;">
+        Edit Title
+      </span>
+    </h1>
       <div class="btn-group navbar-brand" role="group">
         <button id="loadPlaylist" class="btn btn-outline-primary">Play All </button>
       </div>
       <div class="btn-group navbar-brand" role="group">
         <form action = '/export_playlist' method = 'POST'> 
-          {% if '&' in playlist.title %} 
-            <button type="submit" class="btn btn-outline-primary" name="playlist_id_shared" value="{{ playlist.id }}"> Export Playlist to Spotify</button>
-          {% endif %}
-          {% if '&' not in playlist.title %} 
+          {% if not playlist.joining_user_id %} 
             <button type="submit" class="btn btn-outline-primary" name="playlist_id_solo" value="{{ playlist.id }}"> Export Playlist to Spotify</button>
+          {% else %} 
+            <button type="submit" class="btn btn-outline-primary" name="playlist_id_shared" value="{{ playlist.id }}"> Export Playlist to Spotify</button>
           {% endif %}
         </form>
       </div>
     </div>
+</div>
+
+<div class="modal fade" tabindex="-1" id="rename" aria-hidden="true" style="display: none;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Rename Playlist</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      {% if not playlist.joining_user_id %}
+      <form action = '/rename_solo_playlist/{{playlist.id}}' method = "POST">
+        <div class="modal-body">
+          New name: <input type="text" name="new_name">
+          <input type="submit" value="Rename">
+        </div>
+    </form>
+      {% else %}
+      <form action = '/rename_shared_playlist/{{playlist.id}}' method = "POST">
+        <div class="modal-body">
+          New name: <input type="text" name="new_name">
+          <input type="submit" value="Rename">
+        </div>
+    </form>
+      {% endif %}  
+    </div>
+  </div>
 </div>
 
 <div class="modal" tabindex="-1" id="re-auth" style="display: none;">
@@ -83,6 +115,24 @@
   </table>
 </div>
 
+{% if not playlist.joining_user_id %}
+  <form action='/playlist' method = 'POST'>
+    <input type="submit" value="Refresh Playlist?">
+  </form>  
+{% else %}
+  {% if user.id == playlist.creating_user_id %}
+    <form action='/playlist/{{ playlist.joining_user_id }}' method = 'POST'>
+      <input type="submit" value="Refresh Playlist?">
+    </form>
+  {% else %}
+    <form action='/playlist/{{ playlist.creating_user_id }}' method = 'POST'>
+      <input type="submit" value="Refresh Playlist?">
+    </form>
+  {% endif %}
+{% endif %} 
+
+<p>Please note, this will create a new playlist, but you will still have access to this one.</p>
+
 <br>
 <br>
 <br>
@@ -114,35 +164,38 @@
               headers: new Headers({
                 Authorization: "Bearer " + token,
               }),
-            }).then((response) => console.log(response));
+            }).then((response) => {
+              console.log(response)
+              if (response['status'] > 300) {
+                document.getElementById('re-auth').style.display = "block";
+              }});
+            
             };
           
           connect_to_device();
 
           const handle_shuffle = () => {
             console.log("Handling shuffle");
-            let change_device = fetch("https://api.spotify.com/v1/me/player/shuffle", {
+            let shuffle = fetch("https://api.spotify.com/v1/me/player/shuffle?state=false&device_id="+device_id, {
               method: "PUT",
-              body: JSON.stringify({
-                state: false,
-                device_id: device_id,
-              }),
               headers: new Headers({
                 Authorization: "Bearer " + token,
               }),
             }).then((response) => console.log(response));
             };
         
-          handle_shuffle();
+          setTimeout(() => { handle_shuffle()}, "3000");
           });
 
       // Not Ready
       player.addListener('not_ready', ({ device_id }) => {
           console.log('Device ID has gone offline', device_id);
+          document.getElementById('re-auth').style.display = "block";
       });
 
       player.addListener('initialization_error', ({ message }) => {
           console.error(message);
+          document.getElementById('re-auth').style.display = "block";
       });
 
       player.addListener('authentication_error', ({ message }) => {
@@ -152,6 +205,7 @@
 
       player.addListener('account_error', ({ message }) => {
           console.error(message);
+          document.getElementById('re-auth').style.display = "block";
       });
 
       player.addListener('player_state_changed', ({
@@ -165,7 +219,6 @@
           element.style.background = 'white';
         }
         document.getElementById(id_current+'text').style.background = 'green';
-        console.log('Currently Track', current_track);
       });
 
       player.connect();
@@ -205,13 +258,24 @@
         const container = document.getElementsByClassName(number);
         for (const col of container) {
           col.onmouseover = function() {
-            console.log('MOUSEOVER');
             element.innerHTML = '<i class="bi bi-play-fill"></i>';
           };
           col.onmouseleave = function() {
             element.innerHTML = number;
           }}
         }
+
+      const edit = document.getElementById('edit_playlist');
+      const edit_info = document.getElementById('edit_info')
+      edit.onmouseover = function(){
+        edit_info.style.fontSize = '16px';
+        edit_info.style.display = 'inline';
+        edit_info.style.padding = '10px, 0';
+      }
+      edit.onmouseleave = function(){
+        edit_info.style.display = 'none';
+      }
+        
       const playlistTracks = JSON.parse('{{ playlist_tracks | tojson }}');
 
       URIs = []
@@ -220,6 +284,7 @@
       }
 
       document.getElementById('loadPlaylist').onclick = function() {
+        console.log(" CLICK");
         const update_queue = () => {
             console.log("Updating the queue");
             let update_queue = fetch("https://api.spotify.com/v1/me/player/play", {
@@ -230,7 +295,11 @@
               headers: new Headers({
                 Authorization: "Bearer " + token,
               }),
-            }).then((response) => console.log(response));
+            }).then((response) => {
+              console.log(response)
+              if (response['status']> 300) {
+                document.getElementById('re-auth').style.display = "block";
+              }});
             };
         update_queue();
         
@@ -245,7 +314,7 @@
         const tempURIs = URIs.slice(index).concat(URIs.slice(0,index));
         const trackID = track;
         document.getElementById(trackID).onclick = function() {
-        const update_queue = () => {
+          const update_queue = () => {
             console.log("Updating the queue");
             let update_queue = fetch("https://api.spotify.com/v1/me/player/play", {
               method: "PUT",
@@ -255,7 +324,11 @@
               headers: new Headers({
                 Authorization: "Bearer " + token,
               }),
-            }).then((response) => console.log(response));
+            }).then((response) => {
+              console.log(response)
+              if (response['status'] > 300) {
+                document.getElementById('re-auth').style.display = "block";
+              }});
             };
         update_queue();
         
