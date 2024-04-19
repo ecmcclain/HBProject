@@ -327,11 +327,12 @@ def playback():
         playlist = crud.get_solo_playlist_by_id(playlist_id)
     else:
         playlist= crud.get_shared_playlist_by_id(playlist_id)
+
     spotify_user_id = session['spotify_user_id']
 
     req_body = json.dumps({
         'name': f'{playlist.title}',
-        'public': False,
+        'public': f'{playlist.public}',
     })
 
     export_url = API_BASE_URL + f'users/{spotify_user_id}/playlists'
@@ -371,6 +372,25 @@ def rename_shared_playlist(playlist_id):
     db.session.commit()
     print(playlist.title)
     return redirect(f'/view_shared_playlist/{playlist_id}')
+
+@app.route('/make_public', methods=['POST'])
+def make_public():
+    playlist_id = request.form.get('playlist_id_shared')
+    if playlist_id is None:
+        playlist_id = request.form.get('playlist_id_solo')
+        playlist_shared = False
+        playlist = crud.get_solo_playlist_by_id(playlist_id)
+    else:
+        playlist_shared = True
+        playlist= crud.get_shared_playlist_by_id(playlist_id)
+
+    if playlist.public:
+        playlist.public = False
+    playlist.public = True
+
+    if playlist_shared:
+        return redirect(f'/view_shared_playlist{playlist_id}') 
+    return redirect(f'/view_solo_playlist/{playlist_id}')
 
 
 

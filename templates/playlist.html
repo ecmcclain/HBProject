@@ -45,6 +45,11 @@
           {% endif %}
         </form>
       </div>
+      <div class="btn-group navbar-brand" role="group">
+        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#make_public">
+          Toggle Public/Private
+        </button>
+      </div>
     </div>
 </div>
 
@@ -87,6 +92,29 @@
         <form action = '/refresh-token'>
           <button type="submit" class="btn btn-primary">Authenticate</button>
       </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" tabindex="-1" id="make_public" style="display: none;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Make Playlist Public/Private</h5> 
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Please note, if you change the public/private status of this playlist, you will need to re-export the playlist to Spotify to see this change.</p>
+      </div>
+      <div class="modal-footer">
+        <form action = '/make_public' method = 'POST'> 
+          {% if not playlist.joining_user_id %} 
+            <button type="submit" class="btn btn-outline-primary" name="playlist_id_solo" value="{{ playlist.id }}">Continue</button>
+          {% else %} 
+            <button type="submit" class="btn btn-outline-primary" name="playlist_id_shared" value="{{ playlist.id }}">Continue</button>
+          {% endif %}
+        </form>
       </div>
     </div>
   </div>
