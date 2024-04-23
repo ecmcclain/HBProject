@@ -44,6 +44,25 @@
           </li>
         </ul>
         <ul class="navbar-nav d-flex">
+          <li class="nav-item dropdown">
+            <a 
+            class="nav-link dropdown-toggle" 
+            href="#" 
+            id="navbarDropdown" 
+            role="button" 
+            data-bs-toggle="dropdown" 
+            aria-haspopup="true" 
+            aria-expanded="true"
+            >
+              Data Options
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <li><a class="dropdown-item" href='/authorize'>Refresh Spotify Data</a></li>
+              <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#load_more">
+                Load More Spotify Data
+              </button></li>
+            </ul>
+          </li>
           <li class="nav-item">
             <a class="nav-link" href="/log_out">Log Out</a>
           </li>
@@ -54,6 +73,25 @@
     <br>
     <br>
 
+    <div class="modal" tabindex="-1" id="load_more" style="display: none;">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Load More Data</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>Please note, it will take about 3 minutes to load more data from Spotify.</p>
+          </div>
+          <div class="modal-footer">
+            <form action = '/load_more'>
+              <button type="submit" class="btn btn-primary">Continue</button>
+          </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
     
     {% for msg in get_flashed_messages() %}
       <p class="flash-msg">
@@ -61,7 +99,9 @@
       </p>
     {% endfor %}
 
-    {% block body %}{% endblock %}
+    {% block body %}
+    
+    {% endblock %}
 
     {% block after_body %}{% endblock %}
 

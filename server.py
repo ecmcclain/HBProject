@@ -41,7 +41,8 @@ def create_account():
     """Create a new user"""
     username = request.form.get('username')
     password = request.form.get('password')
-    explicit_content = bool(request.form.get('explicit_content'))
+    # explicit_content = bool(request.form.get('explicit_content'))
+    explicit_content = True
 
     #If the given username already exists, ask user to input a new username
     if crud.get_user_by_username(username.lower()) is not None:
@@ -111,6 +112,8 @@ def log_out():
         del session['current_user']
     if 'spotify_user_id' in session: 
         del session['spotify_user_id']
+    if 'load_more' in session: 
+        del session['load_more']
     flash("Logged out.")
     return redirect('/')
 
@@ -153,8 +156,14 @@ def create_solo_playlist():
                     title = track['name']
                     artist = track['artists'][0]['name']
                     artist_id = track['artists'][0]['id']
+                    temp = requests.get(track['artists'][0]['href'], headers=headers)
+                    artist_temp = temp.json()
+                    if artist_temp['genres'] != []:
+                        genre = artist_temp['genres'][0]
+                    else: 
+                        genre = None
 
-                    new_track = crud.create_track(title, artist, artist_id, track_id)
+                    new_track = crud.create_track(title, artist, artist_id, track_id, genre)
                     db.session.add(new_track)
                     db.session.commit()
 
@@ -214,8 +223,13 @@ def create_shared_playlist(other_id):
                         title = track['name']
                         artist = track['artists'][0]['name']
                         artist_id = track['artists'][0]['id']
-
-                        new_track = crud.create_track(title, artist, artist_id, track_id)
+                        temp = requests.get(track['artists'][0]['href'], headers=headers)
+                        artist_temp = temp.json()
+                        if artist_temp['genres'] != []:
+                            genre = artist_temp['genres'][0]
+                        else: 
+                            genre = None
+                        new_track = crud.create_track(title, artist, artist_id, track_id, genre)
                         db.session.add(new_track)
                         db.session.commit()
 
@@ -384,13 +398,50 @@ def make_public():
         playlist_shared = True
         playlist= crud.get_shared_playlist_by_id(playlist_id)
 
-    if playlist.public:
+    if not playlist.public:
+        playlist.public = True
+    else:
         playlist.public = False
-    playlist.public = True
+    db.session.commit()
 
     if playlist_shared:
         return redirect(f'/view_shared_playlist{playlist_id}') 
     return redirect(f'/view_solo_playlist/{playlist_id}')
+
+@app.route('/load_more')
+def load_more():
+
+    if 'current_user' in session:
+        session["load_more"] = True
+        return redirect('/authorize')
+    else:
+        flash('Please log in to access data options.')
+        return redirect('/')
+
+@app.route('/get_genres.json')
+def get_genres():
+    all_tracks = crud.return_all_tracks()
+
+    genres = {}
+    for track in all_tracks:
+        genre = track.genre
+        genres[f'{genre}'] = genres.get(f'{genre}', 0) +1
+    
+    def filter_smallest(pair ):
+        key,value = pair
+        if value < 4:
+            return False
+        else:
+            return True
+
+    genres = dict(filter(filter_smallest, genres.items()))
+
+    all_genres = []
+    all_genres.append({'name': list(genres.keys()),
+                        'count': list(genres.values())})
+    print(all_genres)  
+    print("should see graph")
+    return jsonify({'data': all_genres})
 
 
 
@@ -399,6 +450,10 @@ def make_public():
 @app.route('/authorize')
 def authorize():
     """Complete Spotify's OAuth for the user"""
+
+    if 'current_user' not in session and 'created_user_id' not in session:
+        flash('Please log in to access data options.')
+        return redirect('/')
 
     scope = 'user-read-private user-read-email playlist-read-private user-library-read user-top-read streaming user-modify-playback-state playlist-modify-public playlist-modify-private'
 
@@ -472,9 +527,11 @@ def get_user_data():
         response = requests.get(top_tracks_url, headers=headers)
         top_tracks = response.json()
 
-        top_tracks_url = top_tracks['next']
-        print(top_tracks['total'])
-        top_tracks_url=None
+        if "load_more" in session or len(created_user.tracks) > 20:
+            top_tracks_url = top_tracks['next']
+            print(top_tracks['total'])
+        else:
+            top_tracks_url=None
 
         #Get all the tracks off of each of the user's shared tracks
         items = top_tracks["items"]
@@ -483,9 +540,15 @@ def get_user_data():
             artist = track['artists'][0]['name']
             artist_id = track['artists'][0]['id']
             spotify_track_id = track['id']
+            temp = requests.get(track['artists'][0]['href'], headers=headers)
+            artist_temp = temp.json()
+            if artist_temp['genres'] != []:
+                genre = artist_temp['genres'][0]
+            else: 
+                genre = None
             if crud.get_track_by_spotify_id(spotify_track_id) is None:
                 print(crud.get_track_by_spotify_id(spotify_track_id))
-                new_track = crud.create_track(title, artist, artist_id, spotify_track_id)
+                new_track = crud.create_track(title, artist, artist_id, spotify_track_id, genre)
                 db.session.add(new_track)
                 db.session.commit()
                 new_user_track = crud.create_user_track(created_user,new_track,listened_to=True)

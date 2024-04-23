@@ -33,6 +33,13 @@
         Edit Title
       </span>
     </h1>
+    <h6>
+      {% if playlist.public == True %}
+        Public
+      {% else %}
+        Private
+      {% endif %}
+    </h6>
       <div class="btn-group navbar-brand" role="group">
         <button id="loadPlaylist" class="btn btn-outline-primary">Play All </button>
       </div>

@@ -1,6 +1,11 @@
 {% extends 'base.html' %}
 {% block title %}TEMP TITLE{% endblock %}
 
+{% block head %}
+  {# ChartJS #}   
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
+{% endblock %}
+
 {% block body %}
   <h1>Welcome!</h1>
 
@@ -21,4 +26,14 @@
   Dont have an account?
   <a href='/users'>Create account</a>
 
+  <div id="site-content">
+    <h2>All Genres</h2>
+    <canvas id="all_genres"></canvas>
+  </div>
+
+
+{% endblock %}
+
+{% block js %}
+  <script src="/static/genres.js"></script>
 {% endblock %}

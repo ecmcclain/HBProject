@@ -72,6 +72,7 @@ class Track(db.Model):
     artist = db.Column(db.String)
     artist_id = db.Column(db.String)
     spotify_track_id = db.Column(db.String)
+    genre = db.Column(db.String)
 
     users = db.relationship('User', secondary='user_tracks', back_populates='tracks')
     playlists_shared = db.relationship('Playlist_Shared',secondary = 'shared_playlist_tracks', back_populates='tracks')

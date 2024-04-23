@@ -26,9 +26,9 @@ def get_user_by_id(id):
 
     return user
 
-def create_track(title, artist, artist_id, spotify_track_id):
+def create_track(title, artist, artist_id, spotify_track_id, genre):
 
-    track = Track(title=title, artist=artist, artist_id=artist_id, spotify_track_id=spotify_track_id)
+    track = Track(title=title, artist=artist, artist_id=artist_id, spotify_track_id=spotify_track_id, genre=genre)
 
     return track
 

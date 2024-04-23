@@ -135,7 +135,9 @@
             <div class="accordion-body">
               <ol>
               {% for track in user.tracks %}
+                {% if loop.index < 21 %}
                 <li>{{ track.title }}, {{ track.artist }}</li>
+                {% endif %}
               {% endfor %}
             </ol>
              </div>
@@ -145,9 +147,6 @@
     </div>
 
     <br>
-    
-    <a href='/authorize'>Refresh Spotify data?</a>
-
     <br>
     <br>
 
