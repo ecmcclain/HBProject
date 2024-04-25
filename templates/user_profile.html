@@ -2,6 +2,11 @@
 
 {% block title %}User - Details{% endblock %}
 
+{% block head %}
+  {# ChartJS #}   
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
+{% endblock %}
+
 {% block body %}
 
 <div class="jumbotron jumbotron-fluid">
@@ -17,132 +22,116 @@
     {% if user.get_solo_playlists(user) == [] and user.get_shared_playlists(user) == [] %}
     <h3> Playlists </h3>
       <p>No playlists to display yet, invite other users or create your own!</p>
-    <div class="col-3">
-      <div class="card">
+      <div class="card col-6 col-sm-6 col-md-4 col-lg-4 col-xl-3">
         <div class="card-body">
-          <form action="/playlist" method="POST" >
-          <button type='submit' class="btn btn-primary">Create Solo Playlist</button>
+          <form action = /playlist method = 'POST'>  
+              <button type="submit" class="btn btn-primary"> Create your own solo playlist! </button>
           </form>
         </div>
       </div>
-    </div>
     {% else %}
       <h3> Playlists </h3>
       <p>Select a playlist to start listening </p>
       {% for playlist in user.get_solo_playlists(user) %}
-        <div class="col">
-          <div class="card">
+        <div class="col-6 col-sm-6 col-md-4 col-lg-4 col-xl-3">
+          <a href="/view_solo_playlist/{{ playlist[0] }}" class="card w-100  btn btn-primary playlist" name="invitation" value="accept">
             <div class="card-body">
-              <h5 class="card-title">{{ playlist[1] }}</h5>
-              <a href="/view_solo_playlist/{{ playlist[0] }}" class="btn btn-primary" name="invitation" value="accept">View Playlist</a>
+              <h5 class="card-title"><b>{{ playlist[1] }}</b></h5>
             </div>
-          </div>
+          </a>
         </div>
       {% endfor %}
 
       {% for playlist in user.get_shared_playlists(user) %}
-          <div class="col">
-            <div class="card">
+          <div class="col-6 col-sm-6 col-md-4 col-lg-4 col-xl-3">
+            <a href="/view_shared_playlist/{{ playlist[0] }}" class="card w-100 btn btn-primary playlist" name="invitation" value="accept">
               <div class="card-body">
-                <h5 class="card-title">{{ playlist[1] }}</h5>
-                <a href="/view_shared_playlist/{{ playlist[0] }}" class="btn btn-primary" name="invitation" value="accept">View Playlist</a>
+                <h5 class="card-title"><b>{{ playlist[1] }}</b></h5>
               </div>
-            </div>
+            </a>
           </div>
       {% endfor %}
       {% if user.get_solo_playlists(user) == [] %}
-        <h4> Create your own solo playlist! </h4>
-        <form action = /playlist method = 'POST'>  
-          <p>
-            <button type="submit"> Create Solo Playlist</button>
-          </p>
-        </form>
+          <div class="card col-6 col-sm-6 col-md-4 col-lg-4 col-xl-3">
+            <div class="card-body">
+              <form action = /playlist method = 'POST'>  
+                  <button type="submit" class="btn btn-primary"> Create your own solo playlist! </button>
+              </form>
+            </div>
+          </div>
       {% endif %}
     {% endif %}
   </div>
 
     <br>
-  <div class="row"> 
-    <div class="accordion" id="accordionExample">
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="headingOne">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-            <b>Create a Playlist with Another User</b>
-          </button>
-        </h2>
-        <div id="collapseOne" class="accordion-collapse open" aria-labelledby="headingOne">
-          <div class="accordion-body">
-            <div class="row">
-              <form action = /blend method = 'POST'>  
-                <p>
-                  Please invite the other user by username: <input type="text" name="other-user">
-                  <input type="submit" value="Send Invitation">
-                </p>
-              </form>
-            </div>     
-           </div>
-        </div>
+
+    <h3>Options</h3>
+
+    <div id="homepage" class="d-flex rounded">
+      <div class="nav nav-tabs flex-column" id="pills-tab" role="tablist" aria-orientation="vertical" >
+        <button class="nav-link active" id="pills-home-tab" data-bs-toggle="pill" data-bs-target="#pills-home" type="button" role="tab" aria-controls="pills-home" aria-selected="true"><b>Create a Playlist with Another User</b></button>
+        <button class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">
+          <b><span id="pending_badge">
+          Review Pending Invitations
+          </span></b>
+        </button>
+        <button class="nav-link" id="pills-messages-tab" data-bs-toggle="pill" data-bs-target="#pills-messages" type="button" role="tab" aria-controls="pills-messages" aria-selected="false"><b>View Sent Invitations</b></button>
+        <button class="nav-link" id="pills-settings-tab" data-bs-toggle="pill" data-bs-target="#pills-settings" type="button" role="tab" aria-controls="pills-settings" aria-selected="false"><b>View Your Top Tracks</b></button>
+        <button class="nav-link" id="pills-genres-tab" data-bs-toggle="pill" data-bs-target="#pills-genres" type="button" role="tab" aria-controls="pills-genres" aria-selected="false"><b>View Your Top Genres</b></button>
       </div>
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="headingTwo">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-            <b id="pending_badge">
-              Review Pending Invitations
-            </b>
-          </button>
-        </h2>
-        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo">
-          <div id ='pending' class="accordion-body">
+      <div class="tab-content rounded" id="pills-tabContent">
+        <div class="tab-pane rounded fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab" tabindex="0">
+          <form action = /blend method = 'POST'>  
+            <p>
+              Please invite the other user by username: <input type="text" name="other-user">
+              <input type="submit" class ='btn btn-primary' value="Send Invitation">
+            </p>
+          </form>
+        </div>
+        <div class="tab-pane rounded fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab" tabindex="0">
+            <span id="pending">
             {% if user.get_pending_invitations(user) != [] %}
-            {% for invitation_id in user.get_pending_invitations(user) %}
-              <form action = "/update_invitation/{{ invitation_id }}" method = 'POST'>
-                <li>Invitation from {{ user.get_other_user_by_invitation_id(invitation_id).username }}
-                  <button type="submit" name="invitation" value="accept">Accept</button>
-                  <button type="submit" name="invitation" value="decline">Decline</button>
-                </li>
-              </form>
-            {% endfor %}
-            {% else %}
-              You are up to date! No pending invitations.
-            {% endif %}
-          </div>
+              {% for invitation_id in user.get_pending_invitations(user) %}
+                <form action = "/update_invitation/{{ invitation_id }}" method = 'POST'>
+                  <li>Invitation from {{ user.get_other_user_by_invitation_id(invitation_id).username }}
+                    <button type="submit" class='btn btn-primary' name="invitation" value="accept">Accept</button>
+                    <button type="submit" class='btn btn-primary' name="invitation" value="decline">Decline</button>
+                  </li>
+                </form>
+              {% endfor %}
+              {% else %}
+                You are up to date! No pending invitations.
+              {% endif %}
+            </span>  
         </div>
-      </div>
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="headingThree">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-            <b>View Sent Invitations</b>
-          </button>
-        </h2>
-        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree">
-          <div class="accordion-body">
-            Invitations sent to: 
+        <div class="tab-pane rounded fade" id="pills-messages" role="tabpanel" aria-labelledby="pills-messages-tab" tabindex="0">
+          {% if user.sent_invitations != [] %}
+          Invitations sent to: 
             <ul>
             {% for users in user.sent_invitations %}
               <li>{{ users.username }}</li>
             {% endfor %}
           </ul>
-           </div>
+          {% else %}
+          You have not yet sent any invitations. 
+          {% endif %}
+        </div>
+        <div class="tab-pane rounded fade" id="pills-settings" role="tabpanel" aria-labelledby="pills-settings-tab" tabindex="0">
+          <h5><b>Top Tracks</b></h5>
+          <ol>
+            {% for track in user.tracks %}
+              {% if loop.index < 22 %}
+              <li>{{ track.title }}, {{ track.artist }}</li>
+              {% endif %}
+            {% endfor %}
+          </ol>
+        </div>
+        <div class="tab-pane rounded fade" id="pills-genres" role="tabpanel" aria-labelledby="pills-genre-tab" tabindex="0">
+          <h5><b>Your Genres</b></h5>
+          <div id="site-content">
+            <canvas id="user_genres"></canvas>
           </div>
         </div>
-        <div class="accordion-item">
-          <h2 class="accordion-header" id="headingFour">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
-              <b>View Your Top Tracks</b>
-            </button>
-          </h2>
-          <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour">
-            <div class="accordion-body">
-              <ol>
-              {% for track in user.tracks %}
-                {% if loop.index < 21 %}
-                <li>{{ track.title }}, {{ track.artist }}</li>
-                {% endif %}
-              {% endfor %}
-            </ol>
-             </div>
-            </div>
-          </div>
       </div>
     </div>
 
@@ -163,4 +152,8 @@
   }
 </script>
 
+{% endblock %}
+
+{% block js %}
+  <script src="/static/genres.js"></script>
 {% endblock %}

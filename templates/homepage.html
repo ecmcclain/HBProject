@@ -7,8 +7,14 @@
 {% endblock %}
 
 {% block body %}
-  <h1>Welcome!</h1>
 
+<div class="jumbotron jumbotron-fluid">
+  <div class="container-fluid">
+    <h1 class="display-4">Welcome!</h1>
+  </div>
+</div>
+
+<div class="container-fluid">
   <h2>Log In</h2>
   <form action="/login" method="POST">
     <p>
@@ -25,12 +31,19 @@
   </form>
   Dont have an account?
   <a href='/users'>Create account</a>
+</div>
+<br>
 
-  <div id="site-content">
-    <h2>All Genres</h2>
-    <canvas id="all_genres"></canvas>
-  </div>
-
+  <div class="container">
+    <div class="card ">
+      <div class="card-body">
+        <h2>All Genres</h2>
+        <div id="site-content">
+          <canvas id="all_genres"></canvas>
+        </div>
+      </div>
+    </div>
+</div>
 
 {% endblock %}
 

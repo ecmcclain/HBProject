@@ -2,6 +2,7 @@
 from flask import Flask, redirect, request, session, render_template, jsonify, flash, json
 from model import connect_to_db, db
 from random import sample, choice
+from operator import itemgetter
 
 import crud
 
@@ -159,7 +160,7 @@ def create_solo_playlist():
                     temp = requests.get(track['artists'][0]['href'], headers=headers)
                     artist_temp = temp.json()
                     if artist_temp['genres'] != []:
-                        genre = artist_temp['genres'][0]
+                        genre = choice(artist_temp['genres'])
                     else: 
                         genre = None
 
@@ -226,7 +227,7 @@ def create_shared_playlist(other_id):
                         temp = requests.get(track['artists'][0]['href'], headers=headers)
                         artist_temp = temp.json()
                         if artist_temp['genres'] != []:
-                            genre = artist_temp['genres'][0]
+                            genre = choice(artist_temp['genres'])
                         else: 
                             genre = None
                         new_track = crud.create_track(title, artist, artist_id, track_id, genre)
@@ -436,11 +437,42 @@ def get_genres():
 
     genres = dict(filter(filter_smallest, genres.items()))
 
+    genres = dict(sorted(genres.items(), key=itemgetter(1), reverse=True)[:10])
+
     all_genres = []
     all_genres.append({'name': list(genres.keys()),
                         'count': list(genres.values())})
     print(all_genres)  
     print("should see graph")
+    return jsonify({'data': all_genres})
+
+@app.route('/user_genres.json')
+def user_genres():
+    current_user = crud.get_user_by_id(session['current_user'])
+    all_tracks = crud.get_users_spotify_tracks(current_user)
+    print(all_tracks)
+
+    genres = {}
+    for track in all_tracks:
+        genre = track.genre
+        genres[f'{genre}'] = genres.get(f'{genre}', 0) +1
+    
+    def filter_smallest(pair ):
+        key,value = pair
+        if value < 0:
+            return False
+        else:
+            return True
+
+    genres = dict(filter(filter_smallest, genres.items()))
+
+    genres = dict(sorted(genres.items(), key=itemgetter(1), reverse=True)[:10])
+
+    all_genres = []
+    all_genres.append({'name': list(genres.keys()),
+                        'count': list(genres.values())})
+    print(all_genres)  
+    print("should see graph user")
     return jsonify({'data': all_genres})
 
 
@@ -523,7 +555,9 @@ def get_user_data():
     #get the user's top tracks from Spotify
     top_tracks_url = API_BASE_URL + f'me/top/tracks?time_range=long_term'
 
-    while top_tracks_url is not None:
+    count = 0 
+    while top_tracks_url is not None and count < 500:
+        count = count + 1
         response = requests.get(top_tracks_url, headers=headers)
         top_tracks = response.json()
 
@@ -543,7 +577,7 @@ def get_user_data():
             temp = requests.get(track['artists'][0]['href'], headers=headers)
             artist_temp = temp.json()
             if artist_temp['genres'] != []:
-                genre = artist_temp['genres'][0]
+                genre = choice(artist_temp['genres'])
             else: 
                 genre = None
             if crud.get_track_by_spotify_id(spotify_track_id) is None:

@@ -51,6 +51,12 @@ def get_users_spotify_track_ids(user):
 
     return spotify_track_ids
 
+def get_users_spotify_tracks(user):
+
+    spotify_tracks = db.session.query(Track).filter((Track.id == User_Track.track_id) & (User_Track.user_id==user.id)).all()
+
+    return spotify_tracks
+
 def get_users_spotify_artists_ids(user):
 
     spotify_artists_ids = db.session.query(Track.artist_id).filter((Track.id == User_Track.track_id) & (User_Track.user_id==user.id)).all()

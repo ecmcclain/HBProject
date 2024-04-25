@@ -5,19 +5,19 @@
 {% block body %}
 
 <div class="container-fluid" id="navigate" style="display: none;">
-  <nav class = "navbar fixed-bottom bg-light">
-    <div class="col-3">
+  <nav class = "navbar fixed-bottom">
+    <div class="col-3 col-md-4">
       <span class="navbar-text" id="track" style="font-size:90%">
       </span>
     </div>
-    <div class="col-3 align-content-center">
+    <div class="col-3 col-md-4 d-flex justify-content-center">
       <div class="btn-group" role="group">
-        <button type="button" id="togglePrevious"><i class="bi bi-skip-backward-fill"></i></button>
-        <button type="button" id="togglePlay"><i class="bi bi-pause"></i></button>
-        <button type="button" id="toggleNext"><i class="bi bi-skip-forward-fill"></i></button>
+        <button class="btn btn-primary" type="button" id="togglePrevious"><i class="bi bi-skip-backward-fill"></i></button>
+        <button class="btn btn-primary" type="button" id="togglePlay"><i class="bi bi-pause"></i></button>
+        <button class="btn btn-primary" type="button" id="toggleNext"><i class="bi bi-skip-forward-fill"></i></button>
       </div>
     </div>
-    <div class="col-3">
+    <div class="col-3 col-md-4">
     <span></span>
   </div>
   </nav>
@@ -41,24 +41,69 @@
       {% endif %}
     </h6>
       <div class="btn-group navbar-brand" role="group">
-        <button id="loadPlaylist" class="btn btn-outline-primary">Play All </button>
+        <button id="loadPlaylist" class="btn btn-primary"><i class="bi bi-play"></i></button>
       </div>
       <div class="btn-group navbar-brand" role="group">
         <form action = '/export_playlist' method = 'POST'> 
           {% if not playlist.joining_user_id %} 
-            <button type="submit" class="btn btn-outline-primary" name="playlist_id_solo" value="{{ playlist.id }}"> Export Playlist to Spotify</button>
+            <button type="submit" class="btn btn-primary" name="playlist_id_solo" value="{{ playlist.id }}"> Export Playlist to Spotify</button>
           {% else %} 
-            <button type="submit" class="btn btn-outline-primary" name="playlist_id_shared" value="{{ playlist.id }}"> Export Playlist to Spotify</button>
+            <button type="submit" class="btn btn-primary" name="playlist_id_shared" value="{{ playlist.id }}"> Export Playlist to Spotify</button>
           {% endif %}
         </form>
       </div>
       <div class="btn-group navbar-brand" role="group">
-        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#make_public">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#make_public">
           Toggle Public/Private
         </button>
       </div>
     </div>
 </div>
+
+<div class="container justify-content-start playlist-table">
+  <table class="table table-sm ">
+    <thead>
+      <tr>
+        <th scope='col'>&nbsp&nbsp&nbsp#</th>
+        <th scope='col'>Title</th>
+        <th scope='col'>Artist</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for track in playlist.tracks %}
+      <tr class="other_text {{loop.index}}" id="{{track.spotify_track_id}}text">
+        <th scope='row'> 
+          <button id="{{track.spotify_track_id}}" class="play btn btn-outline-primary">{{loop.index}}</button> 
+        </th>
+        <td>{{ track.title }}</td>
+        <td>{{ track.artist }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+
+{% if not playlist.joining_user_id %}
+  <form action='/playlist' method = 'POST'>
+    <input class='btn btn-primary' type="submit" value="Refresh Playlist?">
+  </form>  
+{% else %}
+  {% if user.id == playlist.creating_user_id %}
+    <form action='/playlist/{{ playlist.joining_user_id }}' method = 'POST'>
+      <input class='btn btn-primary' type="submit" value="Refresh Playlist?">
+    </form>
+  {% else %}
+    <form action='/playlist/{{ playlist.creating_user_id }}' method = 'POST'>
+      <input  class='btn btn-primary' type="submit" value="Refresh Playlist?">
+    </form>
+  {% endif %}
+{% endif %} 
+
+<p>Please note, this will create a new playlist, but you will still have access to this one.</p>
+</div>
+<br>
+<br>
+<br>
 
 <div class="modal fade" tabindex="-1" id="rename" aria-hidden="true" style="display: none;">
   <div class="modal-dialog">
@@ -126,51 +171,6 @@
     </div>
   </div>
 </div>
-
-<div class="container-fluid">
-  <table class="table table-sm">
-    <thead>
-      <tr>
-        <th scope="col-2">#</th>
-        <th scope="col-5">Title</th>
-        <th scope="col-5">Artist</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for track in playlist.tracks %}
-      <tr class="other_text {{loop.index}}" id="{{track.spotify_track_id}}text">
-        <th scope='row'> 
-          <button id="{{track.spotify_track_id}}" class="play">{{loop.index}}</button> 
-        </th>
-        <td>{{ track.title }}</td>
-        <td>{{ track.artist }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
-
-{% if not playlist.joining_user_id %}
-  <form action='/playlist' method = 'POST'>
-    <input type="submit" value="Refresh Playlist?">
-  </form>  
-{% else %}
-  {% if user.id == playlist.creating_user_id %}
-    <form action='/playlist/{{ playlist.joining_user_id }}' method = 'POST'>
-      <input type="submit" value="Refresh Playlist?">
-    </form>
-  {% else %}
-    <form action='/playlist/{{ playlist.creating_user_id }}' method = 'POST'>
-      <input type="submit" value="Refresh Playlist?">
-    </form>
-  {% endif %}
-{% endif %} 
-
-<p>Please note, this will create a new playlist, but you will still have access to this one.</p>
-
-<br>
-<br>
-<br>
 
 </div>
 
@@ -251,9 +251,14 @@
         let id_current = current_track['id'];
         document.getElementById('track').innerHTML = '<b>'+name+'</b><br>'+artist;
         for (const element of document.getElementsByClassName('other_text')) {
-          element.style.background = 'white';
+          document.getElementById(element.id.substring(0,22)).innerHTML = element.classList[1];
+          element.style.color = '#C9C6D8';
+          element.style.fontWeight = 'normal';
         }
-        document.getElementById(id_current+'text').style.background = 'green';
+        document.getElementById(id_current+'text').style.color = 'white';
+        document.getElementById(id_current+'text').style.fontWeight = 'bold';
+        document.getElementById(id_current).innerHTML= '<i class="bi bi-music-note-beamed"></i>';
+        // console.log(document.getElementById(id_current).innerHTML);
       });
 
       player.connect();
@@ -290,14 +295,21 @@
 
       for (const element of document.getElementsByClassName('play')) {
         const number = element.innerHTML;
+        const current_id = element.id;
         const container = document.getElementsByClassName(number);
         for (const col of container) {
           col.onmouseover = function() {
             element.innerHTML = '<i class="bi bi-play-fill"></i>';
           };
           col.onmouseleave = function() {
+            if (document.getElementById(current_id+'text').style.fontWeight == 'bold') {
+              element.innerHTML = '<i class="bi bi-music-note-beamed"></i>';
+          }
+          else {
             element.innerHTML = number;
-          }}
+          }
+          }
+        };
         }
 
       const edit = document.getElementById('edit_playlist');
