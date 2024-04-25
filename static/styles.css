@@ -1,0 +1,122 @@
+body {
+    background-color: #323039;
+    color: #C9C6D8;
+    margin-left: 10px;
+}
+
+.card-body {
+    background-color: #C9C6D8;
+    color: #323039;
+}
+
+.card {
+    margin: 0px 0px 10px 0px;
+    background-color: #C9C6D8;
+    /* border: 1px solid white; */
+}
+
+.accordion {
+    background-color: #323039;
+    color: #C9C6D8;
+}
+
+.table {
+    background-color: #323039;
+    color: #C9C6D8;
+    width: 90%;
+}
+
+.jumbotron {
+    background-color: #484653;
+    color: white;
+    margin-left: -10px;
+    margin-top: -10px;
+    margin-right: 0px;
+    margin-bottom: 10px;
+    background-image: linear-gradient(to bottom, #5b5968, #323039);
+    padding: 10px;
+}
+
+.navbar {
+    background-color: black;
+    color: white;
+}
+
+#homepage{
+    background-color: #C9C6D8;
+    /* background-image: linear-gradient(to top, #5b5968, #323039); */
+    color: black;
+    border-color: #C9C6D8;
+    border-width: 20px;
+}
+
+
+.btn {
+    /* color: #C9C6D8; */
+    color: white;
+    border-color: #323039;
+}
+
+.modal {
+    color: black;
+}
+
+.play {
+    border: 0px;
+}
+
+#site-content {
+    width: 100%;
+    margin: 0 auto;
+    color: white;
+    position: relative;
+    width: 40vw;
+  }
+
+.logo {
+    margin: 4px;
+    padding: 0px 10px;
+}
+
+.lead{
+    font-size: 16px;
+}
+
+.nav-tabs .nav-link.active {
+    background-color: #d7d5e6;
+    border-top: 2px solid white;
+    border-bottom: 2px solid white;
+    border-left: 2px solid white;
+}
+
+.nav-tabs .nav-link {
+    border: 3px solid #d7d5e6;
+}
+
+.nav-link{
+    color: black;
+}
+
+.tab-pane{
+    background-color: #d7d5e6;
+    padding: 10px;
+    
+}
+
+.tab-content{
+    background-color: #d7d5e6;
+    width: 100%;
+    border: 1px  solid white;
+}
+
+.playlist{
+    border: 1px solid white;
+}
+
+.playlist-table{
+    margin: 0px;
+}
+
+
+
+

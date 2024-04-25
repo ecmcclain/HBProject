@@ -427,15 +427,6 @@ def get_genres():
     for track in all_tracks:
         genre = track.genre
         genres[f'{genre}'] = genres.get(f'{genre}', 0) +1
-    
-    def filter_smallest(pair ):
-        key,value = pair
-        if value < 4:
-            return False
-        else:
-            return True
-
-    genres = dict(filter(filter_smallest, genres.items()))
 
     genres = dict(sorted(genres.items(), key=itemgetter(1), reverse=True)[:10])
 
@@ -456,15 +447,6 @@ def user_genres():
     for track in all_tracks:
         genre = track.genre
         genres[f'{genre}'] = genres.get(f'{genre}', 0) +1
-    
-    def filter_smallest(pair ):
-        key,value = pair
-        if value < 0:
-            return False
-        else:
-            return True
-
-    genres = dict(filter(filter_smallest, genres.items()))
 
     genres = dict(sorted(genres.items(), key=itemgetter(1), reverse=True)[:10])
 
