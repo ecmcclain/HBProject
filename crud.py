@@ -94,6 +94,12 @@ def return_all_solo_playlists():
 
     return solo_playlists
 
+def get_solo_playlists_by_name(name):
+    
+    solo_playlists = db.session.query(Playlist_Solo).filter(Playlist_Solo.title.like(f'{name}%')).all()
+
+    return solo_playlists
+
 def get_solo_playlist_by_id(playlist_id):
 
     solo_playlist = db.session.query(Playlist_Solo).filter(Playlist_Solo.id == playlist_id).first()
@@ -105,6 +111,12 @@ def get_shared_playlist_by_id(playlist_id):
     shared_playlist = db.session.query(Playlist_Shared).filter(Playlist_Shared.id == playlist_id).first()
 
     return shared_playlist
+
+def get_shared_playlists_by_name(name):
+    
+    shared_playlists = db.session.query(Playlist_Shared).filter(Playlist_Shared.title.like(f'{name}%')).all()
+
+    return shared_playlists
 
 def create_playlist_shared_track(playlist, track):
 

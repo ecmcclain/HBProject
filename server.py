@@ -125,7 +125,13 @@ def create_solo_playlist():
     user = crud.get_user_by_id(session['current_user'])
 
     #create a solo playlist and add it to the session
-    playlist = crud.create_solo_playlist(user.id, f'{user.username} Playlist', False)
+    similar_playlists = crud.get_solo_playlists_by_name(f'{user.username} Playlist') 
+    if similar_playlists == []:
+        title = f'{user.username} Playlist'
+    else:
+        title = f'{user.username} Playlist {len(similar_playlists)+1}'
+
+    playlist = crud.create_solo_playlist(user.id, title, False)
     db.session.add(playlist)
     db.session.commit()
 
@@ -185,7 +191,13 @@ def create_shared_playlist(other_id):
     other_user = crud.get_user_by_id(other_id)
     
     #create the shared playlist and add it to the session
-    playlist = crud.create_shared_playlist(current_user.id, other_id, f'{current_user.username} & {other_user.username} Playlist', False)
+    similar_playlists = crud.get_shared_playlists_by_name(f'{current_user.username} & {other_user.username} Playlist') 
+    if similar_playlists == []:
+        title = f'{current_user.username} & {other_user.username} Playlist'
+    else:
+        title = f'{current_user.username} & {other_user.username} Playlist {len(similar_playlists)+1}'
+
+    playlist = crud.create_shared_playlist(current_user.id, other_id, title, False)
     db.session.add(playlist)
     db.session.commit()
 
@@ -265,6 +277,25 @@ def view_shared_playlist(playlist_id):
     
     #display the playlist
     print(jsonify(crud.get_playlist_spotify_track_ids(playlist)))
+    return render_template('playlist.html', user=user, playlist=playlist, access_token = session['access_token'], playlist_tracks = crud.get_playlist_spotify_track_ids(playlist))
+
+@app.route('/view_top_tracks')
+def view_top_tracks():
+    """View already created playlist"""
+    #get the cookie session's current user
+    user = crud.get_user_by_id(session['current_user'])
+
+    #create a solo playlist and add it to the session
+    playlist = crud.create_solo_playlist(user.id, "Top Tracks", False)
+    db.session.add(playlist)
+    for track in user.tracks:
+        playlist_track = crud.create_playlist_solo_track(playlist, track)
+        db.session.add(playlist_track)
+    db.session.commit()
+
+    
+    #display the playlist
+    # print(jsonify(crud.get_playlist_spotify_track_ids(playlist)))
     return render_template('playlist.html', user=user, playlist=playlist, access_token = session['access_token'], playlist_tracks = crud.get_playlist_spotify_track_ids(playlist))
 
 
@@ -538,7 +569,7 @@ def get_user_data():
     top_tracks_url = API_BASE_URL + f'me/top/tracks?time_range=long_term'
 
     count = 0 
-    while top_tracks_url is not None and count < 500:
+    while top_tracks_url is not None and count < 10:
         count = count + 1
         response = requests.get(top_tracks_url, headers=headers)
         top_tracks = response.json()
@@ -579,7 +610,7 @@ def get_user_data():
     #confirm data was updated and render the user's profile
     else: 
         flash('User data was updated.')
-        return render_template('user_profile.html', user = created_user)
+        return redirect('/profile')
 
 @app.route('/refresh-token')
 def get_access_token():

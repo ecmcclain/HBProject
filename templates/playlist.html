@@ -25,13 +25,16 @@
 
 <div class="jumbotron jumbotron-fluid">
   <div class="container-fluid">
-    <h1 class="display-4" style="display: flex; align-items: center;">{{ playlist.title }}
-      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rename" id="edit_playlist">
-        <i class="bi bi-pen"></i>
-      </button>
-      <span id = 'edit_info' style="display: none;">
-        Edit Title
-      </span>
+    <h1 class="display-4" style="display: flex; align-items: center;">
+      {{ playlist.title }}
+      <!-- {% if playlist.title != 'Top Tracks' %} -->
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rename" id="edit_playlist">
+          <i class="bi bi-pen"></i>
+        </button>
+        <span id = 'edit_info' style="display: none;">
+          Edit Title
+        </span>
+      <!-- {% endif %} -->
     </h1>
     <h6>
       {% if playlist.public == True %}
@@ -82,25 +85,26 @@
     </tbody>
   </table>
 
+  <!-- {% if playlist.title != 'Top Tracks' %} -->
+    {% if not playlist.joining_user_id %}
+      <form action='/playlist' method = 'POST'>
+        <input class='btn btn-primary' type="submit" value="Refresh Playlist?">
+      </form>  
+    {% else %}
+      {% if user.id == playlist.creating_user_id %}
+        <form action='/playlist/{{ playlist.joining_user_id }}' method = 'POST'>
+          <input class='btn btn-primary' type="submit" value="Refresh Playlist?">
+        </form>
+      {% else %}
+        <form action='/playlist/{{ playlist.creating_user_id }}' method = 'POST'>
+          <input  class='btn btn-primary' type="submit" value="Refresh Playlist?">
+        </form>
+      {% endif %}
+    {% endif %} 
 
-{% if not playlist.joining_user_id %}
-  <form action='/playlist' method = 'POST'>
-    <input class='btn btn-primary' type="submit" value="Refresh Playlist?">
-  </form>  
-{% else %}
-  {% if user.id == playlist.creating_user_id %}
-    <form action='/playlist/{{ playlist.joining_user_id }}' method = 'POST'>
-      <input class='btn btn-primary' type="submit" value="Refresh Playlist?">
-    </form>
-  {% else %}
-    <form action='/playlist/{{ playlist.creating_user_id }}' method = 'POST'>
-      <input  class='btn btn-primary' type="submit" value="Refresh Playlist?">
-    </form>
-  {% endif %}
-{% endif %} 
-
-<p>Please note, this will create a new playlist, but you will still have access to this one.</p>
-</div>
+    <p>Please note, this will create a new playlist, but you will still have access to this one.</p>
+  <!-- {% endif %} -->
+  </div>
 <br>
 <br>
 <br>

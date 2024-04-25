@@ -117,6 +117,34 @@ body {
     margin: 0px;
 }
 
+.module .collapse, .module .collapsing {
+    height: 5.5rem;
+}
+
+.module .collapse {
+    position: relative;
+    display: block;
+    overflow: hidden;
+}
+
+.module .collapse.show {
+    height: auto;
+}
+
+.module .collapse.show:before {
+    display: none;
+}
+
+.module button.more:not(.collapsed):after{
+    content: ' Less';
+}
+
+.module button.more.collapsed:after{
+    content: ' More';
+}
+
+
+
 
 
 
