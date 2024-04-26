@@ -2,23 +2,37 @@
 {% block title %}TEMP TITLE{% endblock %}
 
 {% block body %}
-  <h1>Please sign up!</h1>
+  <div class="jumbotron jumbotron-fluid">
+  <div class="container-fluid">
+    <h1 class="display-4">Please sign up!</h1>
+  </div>
+</div>
 
   <h2>Create Account</h2>
-  <form action="/users" method="POST">
-    <p>
-      Username <input type="text" name="username">
-    </p>
 
-    <p>
-      Password <input type="password" name="password">
-    </p>
-
-    <p>
-      <input type="submit">
-    </p>
+  <form  action="/users" method="POST">
+    <div class="form-group col-3 col-sm-4 col-md-4">
+      <label for="exampleInputEmail1">Username</label>
+      <input type="text" name="username" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter username">
+    </div>
+    <div class="form-group col-3 col-sm-4 col-md-4">
+      <label for="exampleInputPassword1">Password</label>
+      <input type="password" name="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+    </div>
+    <label for="yes">Allow explicit content?</label>
+    <div class="form-group form-check form-check-inline">
+      <input type="radio" class="form-check-input" name="explicit_content" value="True" id="yes">
+      <label class="form-check-label" for="yes">Yes</label>
+      </div>
+    <div class="form-group form-check form-check-inline">
+      <input type="radio" class="form-check-input" name="explicit_content" value="False" id="no">
+      <label class="form-check-label" for="no">No</label>
+    </div>
+    <br><br>
+    <button type="submit" class="btn btn-primary">Submit</button>
   </form>
+  <br>
   Already have an account?
-  <a href='/'>Log In</a>
+  <a href='/'  style="color: white">Log In</a>
 
 {% endblock %}

@@ -42,8 +42,7 @@ def create_account():
     """Create a new user"""
     username = request.form.get('username')
     password = request.form.get('password')
-    # explicit_content = bool(request.form.get('explicit_content'))
-    explicit_content = True
+    explicit_content = bool(request.form.get('explicit_content'))
 
     #If the given username already exists, ask user to input a new username
     if crud.get_user_by_username(username.lower()) is not None:
@@ -64,7 +63,7 @@ def login():
     username = request.form.get('username')
     password = request.form.get('password')
 
-    user = crud.get_user_by_username(username)
+    user = crud.get_user_by_username(username.lower())
 
     #if the given username and password are valid, set the current user id in the cookie session and show the user's profile
     if user is not None:
@@ -159,7 +158,9 @@ def create_solo_playlist():
         for track in playlist_tracks['tracks']:
             if len(playlist.tracks) < 20:
                 track_id = track['id']
-                if crud.get_track_by_spotify_id(track_id) not in user.tracks:
+                if user.explicit_content == False and track['explicit']:
+                    continue
+                if track_id not in crud.get_users_spotify_track_ids(user):
                     title = track['name']
                     artist = track['artists'][0]['name']
                     artist_id = track['artists'][0]['id']
@@ -232,7 +233,9 @@ def create_shared_playlist(other_id):
             for track in playlist_tracks['tracks']:
                 if len(playlist.tracks) < 10 or (user == other_user and len(playlist.tracks) < 20):
                     track_id = track['id']
-                    if crud.get_track_by_spotify_id(track_id) not in other.tracks:
+                    if (user.explicit_content == False or other.explicit_content == False) and track['explicit']:
+                        continue
+                    if track_id not in crud.get_users_spotify_track_ids(other):
                         title = track['name']
                         artist = track['artists'][0]['name']
                         artist_id = track['artists'][0]['id']
@@ -285,17 +288,19 @@ def view_top_tracks():
     #get the cookie session's current user
     user = crud.get_user_by_id(session['current_user'])
 
-    #create a solo playlist and add it to the session
-    playlist = crud.create_solo_playlist(user.id, "Top Tracks", False)
-    db.session.add(playlist)
-    for track in user.tracks:
-        playlist_track = crud.create_playlist_solo_track(playlist, track)
-        db.session.add(playlist_track)
-    db.session.commit()
+    if crud.get_solo_playlists_by_name('Top_Tracks') == []: 
+        #create a solo playlist and add it to the session
+        playlist = crud.create_solo_playlist(user.id, "Top Tracks", False)
+        db.session.add(playlist)
+        for track in user.tracks:
+            playlist_track = crud.create_playlist_solo_track(playlist, track)
+            db.session.add(playlist_track)
+        db.session.commit()
+    else: 
+        playlist = crud.get_solo_playlists_by_name('Top_Tracks')[0]
 
     
     #display the playlist
-    # print(jsonify(crud.get_playlist_spotify_track_ids(playlist)))
     return render_template('playlist.html', user=user, playlist=playlist, access_token = session['access_token'], playlist_tracks = crud.get_playlist_spotify_track_ids(playlist))
 
 
@@ -351,7 +356,7 @@ def update_invitation(invitation_id):
         return render_template('user_profile.html', user=user)
 
 
-@app.route('/export_playlist', methods=['POST'])
+@app.route('/export_playlist', methods = ['POST'])
 def playback():
 
     user = crud.get_user_by_id(session['current_user'])
@@ -367,18 +372,23 @@ def playback():
         'Content-Type': 'application/json',
     }
 
-    playlist_id = request.form.get('playlist_id_shared')
-    if playlist_id is None:
-        playlist_id = request.form.get('playlist_id_solo')
+    data = request.form.get('playlist_id_shared')
+    if data is None:
+        print(list(request.form.get('playlist_id_solo'))[0])
+        data = list(request.form.get('playlist_id_solo'))
+        playlist_id = data[0]
+        public = data[1]
         playlist = crud.get_solo_playlist_by_id(playlist_id)
     else:
+        playlist_id = list(data)[0]
+        public = list(data)[1]
         playlist= crud.get_shared_playlist_by_id(playlist_id)
 
     spotify_user_id = session['spotify_user_id']
 
     req_body = json.dumps({
         'name': f'{playlist.title}',
-        'public': f'{playlist.public}',
+        'public': f'{public}',
     })
 
     export_url = API_BASE_URL + f'users/{spotify_user_id}/playlists'

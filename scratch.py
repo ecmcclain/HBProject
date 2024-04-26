@@ -179,13 +179,6 @@ def get_user_data():
 
 
 
-<!-- <p>
-Allow explicit content? 
-<input type="checkbox" name="explicit_content" value="True" id="yes">
-<label for="yes">Yes</label>
-<input type="checkbox" name="explicit_content" value="False" id="no">
-<label for="no">no</label>
-</p> -->
 
 
 # if 'access_token' not in session: 

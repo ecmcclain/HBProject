@@ -16,21 +16,21 @@
 
 <div class="container-fluid">
   <h2>Log In</h2>
-  <form action="/login" method="POST">
-    <p>
-      Username <input type="text" name="username">
-    </p>
-
-    <p>
-      Password <input type="password" name="password">
-    </p>
-
-    <p>
-      <input type="submit">
-    </p>
+  <form  action="/login" method="POST">
+    <div class="form-group col-3 col-sm-4 col-md-4">
+      <label for="exampleInputEmail1">Username</label>
+      <input type="text" name="username" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter username">
+    </div>
+    <div class="form-group col-3 col-sm-4 col-md-4">
+      <label for="exampleInputPassword1">Password</label>
+      <input type="password" name="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+    </div>
+    <br>
+    <button type="submit" class="btn btn-primary">Submit</button>
   </form>
+  <br>
   Dont have an account?
-  <a href='/users'>Create account</a>
+  <a href='/users' style="color: white">Create account</a>
 </div>
 <br>
 

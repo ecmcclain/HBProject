@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Play - Details{% endblock %}
+{% block title %}Playlist - Details{% endblock %}
 
 {% block body %}
 
@@ -27,14 +27,14 @@
   <div class="container-fluid">
     <h1 class="display-4" style="display: flex; align-items: center;">
       {{ playlist.title }}
-      <!-- {% if playlist.title != 'Top Tracks' %} -->
+      <div id = 'edit'>
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rename" id="edit_playlist">
           <i class="bi bi-pen"></i>
         </button>
         <span id = 'edit_info' style="display: none;">
           Edit Title
         </span>
-      <!-- {% endif %} -->
+      </div>
     </h1>
     <h6>
       {% if playlist.public == True %}
@@ -47,18 +47,22 @@
         <button id="loadPlaylist" class="btn btn-primary"><i class="bi bi-play"></i></button>
       </div>
       <div class="btn-group navbar-brand" role="group">
-        <form action = '/export_playlist' method = 'POST'> 
-          {% if not playlist.joining_user_id %} 
-            <button type="submit" class="btn btn-primary" name="playlist_id_solo" value="{{ playlist.id }}"> Export Playlist to Spotify</button>
-          {% else %} 
-            <button type="submit" class="btn btn-primary" name="playlist_id_shared" value="{{ playlist.id }}"> Export Playlist to Spotify</button>
-          {% endif %}
-        </form>
-      </div>
-      <div class="btn-group navbar-brand" role="group">
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#make_public">
-          Toggle Public/Private
-        </button>
+        <div class="dropdown">
+          <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Export Playlist to Spotify
+          </button>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <form action = '/export_playlist' method = 'POST'> 
+              {% if not playlist.joining_user_id %} 
+              <button class="dropdown-item" name="playlist_id_solo" value="{{ playlist.id }}, private">Export as Private</button>
+              <button class="dropdown-item" name="playlist_id_solo" value="{{ playlist.id }}, public">Export as Public</button>
+              {% else %} 
+              <button class="dropdown-item" name="playlist_id_shared" value="{{ playlist.id }}, private">Export as Private</button>
+              <button class="dropdown-item" name="playlist_id_shared" value="{{ playlist.id }}, public">Export as Public</button>
+              {% endif %}
+            </form>
+          </div>
+        </div>
       </div>
     </div>
 </div>
@@ -85,7 +89,7 @@
     </tbody>
   </table>
 
-  <!-- {% if playlist.title != 'Top Tracks' %} -->
+  {% if playlist.title != 'Top Tracks' %}
     {% if not playlist.joining_user_id %}
       <form action='/playlist' method = 'POST'>
         <input class='btn btn-primary' type="submit" value="Refresh Playlist?">
@@ -103,7 +107,7 @@
     {% endif %} 
 
     <p>Please note, this will create a new playlist, but you will still have access to this one.</p>
-  <!-- {% endif %} -->
+  {% endif %}
   </div>
 <br>
 <br>
@@ -117,19 +121,29 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       {% if not playlist.joining_user_id %}
-      <form action = '/rename_solo_playlist/{{playlist.id}}' method = "POST">
-        <div class="modal-body">
-          New name: <input type="text" name="new_name">
-          <input type="submit" value="Rename">
-        </div>
-    </form>
+      <div class="modal-body">
+        <form  action = '/rename_solo_playlist/{{playlist.id}}' method="POST">
+          <div class="form-group">
+            <label for="exampleInputEmail1">New name:</label>
+            <input type="text" name="new_name" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="{{playlist.title}}">
+          </div>
+          <br>
+          <button type="submit" class="btn btn-primary" value="Rename">Rename</button>
+          <br>
+        </form>
+      </div>  
       {% else %}
-      <form action = '/rename_shared_playlist/{{playlist.id}}' method = "POST">
-        <div class="modal-body">
-          New name: <input type="text" name="new_name">
-          <input type="submit" value="Rename">
-        </div>
-    </form>
+      <div class="modal-body">
+        <form  action = '/rename_shared_playlist/{{playlist.id}}' method="POST">
+          <div class="form-group">
+            <label for="exampleInputEmail1">New name:</label>
+            <input type="text" name="new_name" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="{{playlist.title}}">
+          </div>
+          <br>
+          <button type="submit" class="btn btn-primary" value="Rename">Rename</button>
+          <br>
+        </form>
+      </div>  
       {% endif %}  
     </div>
   </div>
@@ -148,29 +162,6 @@
         <form action = '/refresh-token'>
           <button type="submit" class="btn btn-primary">Authenticate</button>
       </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal" tabindex="-1" id="make_public" style="display: none;">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Make Playlist Public/Private</h5> 
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p>Please note, if you change the public/private status of this playlist, you will need to re-export the playlist to Spotify to see this change.</p>
-      </div>
-      <div class="modal-footer">
-        <form action = '/make_public' method = 'POST'> 
-          {% if not playlist.joining_user_id %} 
-            <button type="submit" class="btn btn-outline-primary" name="playlist_id_solo" value="{{ playlist.id }}">Continue</button>
-          {% else %} 
-            <button type="submit" class="btn btn-outline-primary" name="playlist_id_shared" value="{{ playlist.id }}">Continue</button>
-          {% endif %}
-        </form>
       </div>
     </div>
   </div>
@@ -315,9 +306,13 @@
           }
         };
         }
+      
+      if ('{{ playlist.title }}' == 'Top Tracks'){
+        document.getElementById('edit').style.display = 'none';
+      }
 
       const edit = document.getElementById('edit_playlist');
-      const edit_info = document.getElementById('edit_info')
+      const edit_info = document.getElementById('edit_info');
       edit.onmouseover = function(){
         edit_info.style.fontSize = '16px';
         edit_info.style.display = 'inline';
@@ -392,4 +387,11 @@
   }
 </script>
 
+{% endblock %}
+
+{% block js %}
+  <script src="/static/genres.js"></script>
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 {% endblock %}

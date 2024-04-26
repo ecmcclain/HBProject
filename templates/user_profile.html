@@ -99,12 +99,15 @@
       </div>
       <div class="tab-content rounded" id="pills-tabContent">
         <div class="tab-pane rounded fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab" tabindex="0">
-          <form action = /blend method = 'POST'>  
-            <p>
-              Please invite the other user by username: <input type="text" name="other-user">
-              <input type="submit" class ='btn btn-primary' value="Send Invitation">
-            </p>
+          <form  action= "/blend" method="POST">
+            <div class="form-group col-3 col-sm-4 col-md-4">
+              <label for="exampleInputEmail1">Please invite user by username:</label>
+              <input type="text" name="other-user" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter username">
+            </div>
+            <br>
+            <button type="submit" class="btn btn-primary" value="Send Invitation">Send Invitation</button>
           </form>
+
         </div>
         <div class="tab-pane rounded fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab" tabindex="0">
             <span id="pending">
@@ -135,12 +138,15 @@
           {% endif %}
         </div>
         <div class="tab-pane rounded fade" id="pills-settings" role="tabpanel" aria-labelledby="pills-settings-tab" tabindex="0">
-          <h5><b>Top Tracks</b></h5>
+          <h5><b>Top Tracks</b>
+            <a href = '/view_top_tracks' class = 'btn btn-primary'>Listen</a>
+          </h5>
           <ol>
             {% for track in user.tracks %}
               <li>{{ track.title }}, {{ track.artist }}</li>
             {% endfor %}
           </ol>
+
         </div>
         <div class="tab-pane rounded fade" id="pills-genres" role="tabpanel" aria-labelledby="pills-genre-tab" tabindex="0">
           <h5><b>Your Genres</b></h5>
