@@ -55,9 +55,9 @@
                 </div>
               </a>
             </div>
-          {% endfor %}
+            {% endfor %}
 
-          {% for playlist in user.get_shared_playlists(user) %}
+            {% for playlist in user.get_shared_playlists(user) %}
               <div class="col-6 col-sm-6 col-md-4 col-lg-4 col-xl-3">
                 <a href="/view_shared_playlist/{{ playlist[0] }}" class="card w-100 btn btn-primary playlist" name="invitation" value="accept">
                   <div class="card-body">
@@ -65,11 +65,11 @@
                   </div>
                 </a>
               </div>
-          {% endfor %}
+            {% endfor %}
           
-        {% endif %}
+            {% endif %}
+          </div>
       </div>
-    </div>
     {% if user.get_solo_playlists(user)|length +user.get_solo_playlists(user)|length >4 or user.get_shared_playlists(user)|length >3 %}
     <p>
       <button class="btn btn-primary collapsed more" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
@@ -113,12 +113,15 @@
             <span id="pending">
             {% if user.get_pending_invitations(user) != [] %}
               {% for invitation_id in user.get_pending_invitations(user) %}
+              <div class="card col-6 col-sm-6 col-md-4 col-lg-4 col-xl-3">
+                <div class="card-body">
                 <form action = "/update_invitation/{{ invitation_id }}" method = 'POST'>
-                  <li>Invitation from {{ user.get_other_user_by_invitation_id(invitation_id).username }}
+                  <p>Invitation from {{ user.get_other_user_by_invitation_id(invitation_id).username }}</p>
                     <button type="submit" class='btn btn-primary' name="invitation" value="accept">Accept</button>
                     <button type="submit" class='btn btn-primary' name="invitation" value="decline">Decline</button>
-                  </li>
                 </form>
+              </div>
+            </div>
               {% endfor %}
               {% else %}
                 You are up to date! No pending invitations.
@@ -127,12 +130,14 @@
         </div>
         <div class="tab-pane rounded fade" id="pills-messages" role="tabpanel" aria-labelledby="pills-messages-tab" tabindex="0">
           {% if user.sent_invitations != [] %}
-          Invitations sent to: 
-            <ul>
-            {% for users in user.sent_invitations %}
-              <li>{{ users.username }}</li>
+          <p>Invitations sent to: </p>
+          {% for users in user.sent_invitations %}
+            <div class="card col-6 col-sm-6 col-md-4 col-lg-4 col-xl-3">
+              <div class="card-body d-flex justify-content-center">
+                {{ users.username }}
+              </div>
+            </div>
             {% endfor %}
-          </ul>
           {% else %}
           You have not yet sent any invitations. 
           {% endif %}
@@ -141,17 +146,26 @@
           <h5><b>Top Tracks</b>
             <a href = '/view_top_tracks' class = 'btn btn-primary'>Listen</a>
           </h5>
-          <ol>
+          <ol class="two-columns">
             {% for track in user.tracks %}
-              <li>{{ track.title }}, {{ track.artist }}</li>
+              {% if loop.index < 101 %}
+              <li><b>{{ track.title }}</b><br>
+                {{ track.artist }}<br></li>
+              {% endif %}
             {% endfor %}
           </ol>
 
         </div>
         <div class="tab-pane rounded fade" id="pills-genres" role="tabpanel" aria-labelledby="pills-genre-tab" tabindex="0">
-          <h5><b>Your Genres</b></h5>
+          <h5 class="d-flex justify-content-between"><b id = 'chartTitle'>Your Top Genres</b>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="allGenres">
+            <label class="form-check-label" id='chartLabel' for="allGenres" style="font-size: 16px">View all users' top genres</label>
+          </h5> 
           <div id="site-content">
-            <canvas id="user_genres"></canvas>
+              <canvas id="user_genres"></canvas>
+              <canvas id="all_genres" style="display: none"></canvas>
+            </div>
           </div>
         </div>
       </div>
@@ -172,6 +186,23 @@
   else {
     document.getElementById('pending_badge').innerHTML = 'Review Pending Invitations <span class="badge rounded-pill bg-success" display="none;">Pending</span>';
   }
+
+  console.log(document.getElementById('allGenres').checked);
+
+document.getElementById('allGenres').onclick = function() {
+    if (document.getElementById('allGenres').checked) {
+      document.getElementById('user_genres').style.display = "none";
+      document.getElementById('all_genres').style.display = "block";
+      document.getElementById('chartLabel').innerHTML = 'View all your top genres';
+      document.getElementById('chartTitle').innerHTML = "All Users' Top Genres";
+    } else  {
+      document.getElementById('user_genres').style.display = "block";
+      document.getElementById('all_genres').style.display = "none";
+      document.getElementById('chartLabel').innerHTML = "View all users' top genres";
+      document.getElementById('chartTitle').innerHTML = "Your Top Genres";
+
+  }
+  };
 </script>
 
 {% endblock %}

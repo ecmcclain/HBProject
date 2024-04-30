@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+import os
 
 db = SQLAlchemy()
 
@@ -144,10 +145,17 @@ class Invitation(db.Model):
     accepted = db.Column(db.Boolean)
     declined = db.Column(db.Boolean)
 
-def connect_to_db(app):
+def example_data():
+    """Create example data for testing"""
+
+    os.system("dropdb testdb")
+    os.system('createdb testdb')
+    os.system('psql testdb < music.sql')
+
+def connect_to_db(app, db_uri="postgresql:///music"):
     """Connect the database to Flask app."""
 
-    app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql:///music"
+    app.config["SQLALCHEMY_DATABASE_URI"] = db_uri
     app.config["SQLALCHEMY_ECHO"] = False
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     db.app = app

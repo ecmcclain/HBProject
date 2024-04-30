@@ -57,6 +57,10 @@ body {
     border-color: #323039;
 }
 
+/* .btn-primary {
+    background-color: #5a5ad8;
+} */
+
 .modal {
     color: black;
 }
@@ -140,8 +144,23 @@ body {
 }
 
 .module button.more.collapsed:after{
-    content: ' More';
+    content: ' More Playlists';
 }
+
+ol.two-columns{
+    column-count: 3;
+    page-break-inside: avoid-column;
+    break-inside: avoid-column;
+    display:inline-block;
+}
+
+li {
+    page-break-inside: avoid-column;
+    break-inside: avoid-column;
+}
+
+
+
 
 
 

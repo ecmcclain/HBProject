@@ -81,9 +81,10 @@ def login():
             }
 
             #get the user's Spotify user id
-            temp = requests.get(API_BASE_URL + 'me', headers=headers)
-            spotify_user_id = temp.json()['id']
-            session['spotify_user_id'] = spotify_user_id
+            if not app.config['TESTING']:
+                temp = requests.get(API_BASE_URL + 'me', headers=headers)
+                spotify_user_id = temp.json()['id']
+                session['spotify_user_id'] = spotify_user_id
 
             return render_template('user_profile.html', user = user)
     
@@ -258,7 +259,7 @@ def create_shared_playlist(other_id):
 
 @app.route('/view_solo_playlist/<playlist_id>')
 def view_solo_playlist(playlist_id):
-    """View already created playlist"""
+    """View already created solo playlist"""
     #get the cookie session's current user
     user = crud.get_user_by_id(session['current_user'])
 
@@ -271,7 +272,7 @@ def view_solo_playlist(playlist_id):
 
 @app.route('/view_shared_playlist/<playlist_id>')
 def view_shared_playlist(playlist_id):
-    """View already created playlist"""
+    """View already created shared playlist"""
     #get the cookie session's current user
     user = crud.get_user_by_id(session['current_user'])
 
@@ -284,10 +285,11 @@ def view_shared_playlist(playlist_id):
 
 @app.route('/view_top_tracks')
 def view_top_tracks():
-    """View already created playlist"""
+    """View already created top tracks playlist or create it if it doesn't already exist"""
     #get the cookie session's current user
     user = crud.get_user_by_id(session['current_user'])
 
+    #check if the top tracks playlist already exists
     if crud.get_solo_playlists_by_name('Top_Tracks') == []: 
         #create a solo playlist and add it to the session
         playlist = crud.create_solo_playlist(user.id, "Top Tracks", False)
@@ -296,10 +298,10 @@ def view_top_tracks():
             playlist_track = crud.create_playlist_solo_track(playlist, track)
             db.session.add(playlist_track)
         db.session.commit()
+    #if it exists, access the playlist
     else: 
         playlist = crud.get_solo_playlists_by_name('Top_Tracks')[0]
 
-    
     #display the playlist
     return render_template('playlist.html', user=user, playlist=playlist, access_token = session['access_token'], playlist_tracks = crud.get_playlist_spotify_track_ids(playlist))
 
@@ -358,7 +360,7 @@ def update_invitation(invitation_id):
 
 @app.route('/export_playlist', methods = ['POST'])
 def playback():
-
+    """Export a playlist to Spotify"""
     user = crud.get_user_by_id(session['current_user'])
     print(session)
 
@@ -372,6 +374,7 @@ def playback():
         'Content-Type': 'application/json',
     }
 
+    #check if the playlist being exported is a shared playlist or a solo playlist
     data = request.form.get('playlist_id_shared')
     if data is None:
         print(list(request.form.get('playlist_id_solo'))[0])
@@ -391,6 +394,7 @@ def playback():
         'public': f'{public}',
     })
 
+    #export the playlist to Spotify by first creating the playlist in Spotify
     export_url = API_BASE_URL + f'users/{spotify_user_id}/playlists'
     response = requests.post(export_url, data=req_body, headers=headers)
     play = response.json()
@@ -404,6 +408,7 @@ def playback():
         'uris': playlist_spotify_track_id,
     })
 
+    #add the tracks to the playlist
     add_tracks_url = API_BASE_URL + f'playlists/{spotify_playlist_id}/tracks'
     response = requests.post(add_tracks_url, data=req_body, headers=headers)
     play = response.json()
@@ -413,6 +418,7 @@ def playback():
 
 @app.route('/rename_solo_playlist/<playlist_id>', methods=['POST'])
 def rename_solo_playlist(playlist_id):
+    """Rename a solo playlist"""
     new_name = request.form.get('new_name')
     playlist = crud.get_solo_playlist_by_id(playlist_id)
     playlist.title = new_name
@@ -422,6 +428,7 @@ def rename_solo_playlist(playlist_id):
 
 @app.route('/rename_shared_playlist/<playlist_id>', methods=['POST'])
 def rename_shared_playlist(playlist_id):
+    """Rename a shared playlist"""
     new_name = request.form.get('new_name')
     playlist = crud.get_shared_playlist_by_id(playlist_id)
     playlist.title = new_name
@@ -429,30 +436,9 @@ def rename_shared_playlist(playlist_id):
     print(playlist.title)
     return redirect(f'/view_shared_playlist/{playlist_id}')
 
-@app.route('/make_public', methods=['POST'])
-def make_public():
-    playlist_id = request.form.get('playlist_id_shared')
-    if playlist_id is None:
-        playlist_id = request.form.get('playlist_id_solo')
-        playlist_shared = False
-        playlist = crud.get_solo_playlist_by_id(playlist_id)
-    else:
-        playlist_shared = True
-        playlist= crud.get_shared_playlist_by_id(playlist_id)
-
-    if not playlist.public:
-        playlist.public = True
-    else:
-        playlist.public = False
-    db.session.commit()
-
-    if playlist_shared:
-        return redirect(f'/view_shared_playlist{playlist_id}') 
-    return redirect(f'/view_solo_playlist/{playlist_id}')
-
 @app.route('/load_more')
 def load_more():
-
+    """Load more Spotify data if the user requests it"""
     if 'current_user' in session:
         session["load_more"] = True
         return redirect('/authorize')
@@ -462,6 +448,7 @@ def load_more():
 
 @app.route('/get_genres.json')
 def get_genres():
+    """Get all the users' top ten genres and send to the graph JavaScript file"""
     all_tracks = crud.return_all_tracks()
 
     genres = {}
@@ -480,6 +467,7 @@ def get_genres():
 
 @app.route('/user_genres.json')
 def user_genres():
+    """Get the given user's top ten genres and send to the graph JavaScript file"""
     current_user = crud.get_user_by_id(session['current_user'])
     all_tracks = crud.get_users_spotify_tracks(current_user)
     print(all_tracks)
@@ -640,7 +628,7 @@ def get_access_token():
         new_token_info = response.json()
 
         session['access_token'] = new_token_info['access_token']
-        session['expires_at'] = datetime.datetime.now().timestamp() + new_token_info['expires_in'] # 3600 seconds (1 day) 
+        session['expires_at'] = datetime.datetime.now().timestamp() + new_token_info['expires_in'] # 3600 seconds (1 hour) 
        
     if 'current_user' not in session: 
         return redirect('/get_user_data')

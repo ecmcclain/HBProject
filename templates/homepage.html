@@ -15,27 +15,29 @@
 </div>
 
 <div class="container-fluid">
-  <h2>Log In</h2>
-  <form  action="/login" method="POST">
-    <div class="form-group col-3 col-sm-4 col-md-4">
-      <label for="exampleInputEmail1">Username</label>
-      <input type="text" name="username" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter username">
-    </div>
-    <div class="form-group col-3 col-sm-4 col-md-4">
-      <label for="exampleInputPassword1">Password</label>
-      <input type="password" name="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
-    </div>
+  <div class='row'>
+    <div class="column col-12 col-sm-12 col-md-6 col-lg-4 col-xl-4">
+    <h2>Log In</h2>
+    <form  action="/login" method="POST">
+      <div class="form-group">
+        <label for="exampleInputEmail1">Username</label>
+        <input type="text" name="username" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter username">
+      </div>
+      <div class="form-group">
+        <label for="exampleInputPassword1">Password</label>
+        <input type="password" name="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+      </div>
+      <br>
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
     <br>
-    <button type="submit" class="btn btn-primary">Submit</button>
-  </form>
-  <br>
-  Dont have an account?
-  <a href='/users' style="color: white">Create account</a>
-</div>
-<br>
-
-  <div class="container">
-    <div class="card ">
+    <span>
+      Dont have an account?
+      <a href='/users' style="color: white">Create account</a>
+    </span>
+    </div>
+    <div class="column col-12 col-sm-12 col-md-6 col-lg-8 col-xl-7">
+    <div class="card">
       <div class="card-body">
         <h2>All Users' Top Genres</h2>
         <div id="site-content">
@@ -43,6 +45,10 @@
         </div>
       </div>
     </div>
+  </div>
+</div>
+  
+<br>
 </div>
 
 {% endblock %}
