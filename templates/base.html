@@ -7,6 +7,7 @@
       {% block title %}{% endblock %}
     </title>
 
+    {# Bootstrap reference #}
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -14,17 +15,19 @@
       crossorigin="anonymous"
     />
 
+    {# Bootstrap style sheet #}
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css"
     />
 
+    {# Local style sheet #}
     <link rel="stylesheet" href="/static/styles.css">
 
     {% block head %}{% endblock %}
   </head>
   <body>
-     <!-- Static navbar -->
+      {# Navbar #}
      <nav class="navbar fixed-top navbar-expand-sm navbar-dark bg-dark">
       <a class="navbar-brand mb-2 ms-2 logo" href="/"><img src="/static/lemmeshowyouasonglogo.png" width="130"></a>
       <button
@@ -59,7 +62,7 @@
               Data Options
             </a>
             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <li><a class="dropdown-item" href='/authorize'>Refresh Spotify Data</a></li>
+              <li><a class="dropdown-item" href='/authorize'>Update Spotify Data</a></li>
               <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#load_more">
                 Load More Spotify Data
               </button></li>
@@ -75,6 +78,7 @@
     <br>
     <br>
 
+    {# Modal to alert user that loading more Spotify data may take a few minutes #}
     <div class="modal" tabindex="-1" id="load_more" style="display: none;">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -95,6 +99,7 @@
     </div>
 
     
+    {# Flashed messages #}
     {% for msg in get_flashed_messages() %}
       <p class="flash-msg">
         {{ msg }}
@@ -108,6 +113,8 @@
     {% block after_body %}{% endblock %}
 
     {% block js %}{% endblock %}
+
+    {# Bootstrap reference #}
     <script 
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" 
     integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" 

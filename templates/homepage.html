@@ -2,12 +2,13 @@
 {% block title %}TEMP TITLE{% endblock %}
 
 {% block head %}
-  {# ChartJS #}   
+  {# ChartJS reference #}   
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
 {% endblock %}
 
 {% block body %}
 
+{# Headline for the homepage #}
 <div class="jumbotron jumbotron-fluid">
   <div class="container-fluid">
     <h1 class="display-4">Welcome!</h1>
@@ -16,6 +17,8 @@
 
 <div class="container-fluid">
   <div class='row'>
+
+    {# Log in form #}
     <div class="column col-12 col-sm-12 col-md-6 col-lg-4 col-xl-4">
     <h2>Log In</h2>
     <form  action="/login" method="POST">
@@ -31,11 +34,15 @@
       <button type="submit" class="btn btn-primary">Submit</button>
     </form>
     <br>
+
+    {# Option to redirect to create an account if the user does not have one #}
     <span>
       Dont have an account?
       <a href='/users' style="color: white">Create account</a>
     </span>
     </div>
+
+    {# Graphic of all users' top genres #}
     <div class="column col-12 col-sm-12 col-md-6 col-lg-8 col-xl-7">
     <div class="card">
       <div class="card-body">
@@ -54,5 +61,6 @@
 {% endblock %}
 
 {% block js %}
+  {# ChartJS Javascript file #}
   <script src="/static/genres.js"></script>
 {% endblock %}

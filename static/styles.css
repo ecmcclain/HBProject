@@ -159,6 +159,9 @@ li {
     break-inside: avoid-column;
 }
 
+#track {
+    padding-left: .5rem;
+}
 
 
 

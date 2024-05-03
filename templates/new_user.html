@@ -2,14 +2,16 @@
 {% block title %}TEMP TITLE{% endblock %}
 
 {% block body %}
-  <div class="jumbotron jumbotron-fluid">
+
+{# Headline for the creating user page #}
+<div class="jumbotron jumbotron-fluid">
   <div class="container-fluid">
     <h1 class="display-4">Please sign up!</h1>
   </div>
 </div>
 
-  <h2>Create Account</h2>
-
+<h2>Create Account</h2>
+  {# Form to create an accoutn with username, password, and yes/no explicit content #}
   <form  action="/users" method="POST">
     <div class="form-group col-3 col-sm-4 col-md-4">
       <label for="exampleInputEmail1">Username</label>
@@ -32,6 +34,8 @@
     <button type="submit" class="btn btn-primary">Submit</button>
   </form>
   <br>
+
+  {# Redirect to the login page is the user already has an account #}
   Already have an account?
   <a href='/'  style="color: white">Log In</a>
 

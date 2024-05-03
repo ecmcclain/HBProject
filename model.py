@@ -30,16 +30,19 @@ class User(db.Model):
     
     @classmethod
     def get_pending_invitations(cls, current_user):
+        """Get a list of pending invitations for a given user"""
         invitation_ids = db.session.query(Invitation.id).filter((current_user.id == Invitation.joining_user_id) & (Invitation.accepted==False) & (Invitation.declined ==False)).all()
         return [item for t in invitation_ids for item in t]
 
     @classmethod
     def get_accepted_invitations(cls, current_user):
+        """Get a list of accepted invitations for a given user"""
         invitation_ids = db.session.query(Invitation.id).filter((current_user.id == Invitation.joining_user_id) & (Invitation.accepted==True) | (current_user.id == Invitation.creating_user_id) & (Invitation.accepted==True)).all()
         return [item for t in invitation_ids for item in t]
 
     @classmethod
     def get_other_user_by_invitation_id(cls, invitation_id):
+        """Return the other user for a given invitation ID"""
         invitation = db.session.query(Invitation).filter(Invitation.id == invitation_id).first()
         if User.id == invitation.creating_user_id: 
             other_user_id = invitation.joining_user_id
@@ -51,16 +54,14 @@ class User(db.Model):
 
     @classmethod
     def get_solo_playlists(cls, current_user):
+        """Get a list of solo playlists for the given user"""
         playlist = db.session.query(Playlist_Solo.id, Playlist_Solo.title).filter((current_user.id == Playlist_Solo.creating_user_id)).all()
-        print(playlist)
         return playlist
-        # print([item for t in playlist for item in t])
-        # return [item for t in playlist for item in t]
 
     @classmethod
     def get_shared_playlists(cls, current_user):
+        """Get a list of shared playlists for a given user"""
         playlist = db.session.query(Playlist_Shared.id, Playlist_Shared.title).filter((current_user.id == Playlist_Shared.joining_user_id) | (current_user.id == Playlist_Shared.creating_user_id)).all()
-        print(playlist)
         return playlist
 
 class Track(db.Model):

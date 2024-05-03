@@ -1,9 +1,11 @@
 'use strict';
 
+// Configure the chart style
 Chart.defaults.color = '#000';
 Chart.overrides.doughnut.plugins.legend.position = 'right';
 Chart.defaults.layout.padding = 0;
 
+// Create the all genres chart
 fetch('/get_genres.json')
   .then((response) => response.json())
   .then((responseJson) => {
@@ -47,6 +49,7 @@ fetch('/get_genres.json')
     });
 });
 
+// Create the individual user's genres chart
 fetch('/user_genres.json')
   .then((response) => response.json())
   .then((responseJson) => {

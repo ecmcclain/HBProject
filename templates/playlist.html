@@ -4,11 +4,13 @@
 
 {% block body %}
 
+{# A bottem navbar that pops up when the user starts playing a song #}
+{# The navbar displays the song and play/pause, forward, backward buttons for navigation#}
 <div class="container-fluid" id="navigate" style="display: none;">
   <nav class = "navbar fixed-bottom">
     <div class="col-3 col-md-4">
-      <span class="navbar-text" id="track" style="font-size:90%">
-      </span>
+      <div class="navbar-text" id="track" style="font-size:90%">
+      </div>
     </div>
     <div class="col-3 col-md-4 d-flex justify-content-center">
       <div class="btn-group" role="group">
@@ -23,6 +25,7 @@
   </nav>
 </div>
 
+{# The headline for the playlist including title and a edit title option #}
 <div class="jumbotron jumbotron-fluid">
   <div class="container-fluid">
     <h1 class="display-4" style="display: flex; align-items: center;">
@@ -31,18 +34,21 @@
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rename" id="edit_playlist">
           <i class="bi bi-pen"></i>
         </button>
+        {# Pop-up explaining the purpose of the edit playlist button #}
         <span id = 'edit_info' style="display: none;">
           Edit Title
         </span>
       </div>
     </h1>
     <h6>
+      {# displays the public/private status of the playlist #}
       {% if playlist.public == True %}
         Public
       {% else %}
         Private
       {% endif %}
     </h6>
+    {# A dropdown button to allow users to export the playlist to Spotify as public or private #}
       <div class="btn-group navbar-brand" role="group">
         <button id="loadPlaylist" class="btn btn-primary"><i class="bi bi-play"></i></button>
       </div>
@@ -67,8 +73,9 @@
     </div>
 </div>
 
+{# Table of playlist songs #}
 <div class="container justify-content-start playlist-table">
-  <table class="table table-sm ">
+  <table class="table table-sm align-middle">
     <thead>
       <tr>
         <th scope='col'>&nbsp&nbsp&nbsp#</th>
@@ -89,19 +96,20 @@
     </tbody>
   </table>
 
+  {# Button to allow user to create a new playlist with the same users as this playlist #}
   {% if playlist.title != 'Top Tracks' %}
     {% if not playlist.joining_user_id %}
       <form action='/playlist' method = 'POST'>
-        <input class='btn btn-primary' type="submit" value="Refresh Playlist?">
+        <input class='btn btn-primary' type="submit" value="Make a Fresh Playlist?">
       </form>  
     {% else %}
       {% if user.id == playlist.creating_user_id %}
         <form action='/playlist/{{ playlist.joining_user_id }}' method = 'POST'>
-          <input class='btn btn-primary' type="submit" value="Refresh Playlist?">
+          <input class='btn btn-primary' type="submit" value="Make a Fresh Playlist with this User?">
         </form>
       {% else %}
         <form action='/playlist/{{ playlist.creating_user_id }}' method = 'POST'>
-          <input  class='btn btn-primary' type="submit" value="Refresh Playlist?">
+          <input  class='btn btn-primary' type="submit" value="Make a Fresh Playlist with this User?">
         </form>
       {% endif %}
     {% endif %} 
@@ -113,6 +121,7 @@
 <br>
 <br>
 
+{}
 <div class="modal fade" tabindex="-1" id="rename" aria-hidden="true" style="display: none;">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -148,7 +157,7 @@
     </div>
   </div>
 </div>
-
+{# A modal for users to rename a playlist #}
 <div class="modal" tabindex="-1" id="re-auth" style="display: none;">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -169,6 +178,7 @@
 
 </div>
 
+{# Javascript for the Spotify webplayer to allow users to listen to the playlist on the webpage#}
 <script src="https://sdk.scdn.co/spotify-player.js"></script>
 <script>
   window.onSpotifyWebPlaybackSDKReady = () => {
@@ -183,6 +193,7 @@
       player.addListener('ready', ({ device_id }) => {
           console.log('Ready with Device ID', device_id);
 
+          // Connect Spotify to the current device ID
           const connect_to_device = () => {
             console.log("Changing to device");
             let change_device = fetch("https://api.spotify.com/v1/me/player", {
@@ -196,6 +207,7 @@
               }),
             }).then((response) => {
               console.log(response)
+              // Ask user to re-authorize Spotify if there is an error 
               if (response['status'] > 300) {
                 document.getElementById('re-auth').style.display = "block";
               }});
@@ -204,6 +216,7 @@
           
           connect_to_device();
 
+          // Set the playback to never shuffle 
           const handle_shuffle = () => {
             console.log("Handling shuffle");
             let shuffle = fetch("https://api.spotify.com/v1/me/player/shuffle?state=false&device_id="+device_id, {
@@ -217,50 +230,61 @@
           setTimeout(() => { handle_shuffle()}, "3000");
           });
 
-      // Not Ready
+      // Not Ready—various possible errors
       player.addListener('not_ready', ({ device_id }) => {
           console.log('Device ID has gone offline', device_id);
+          // Ask user to re-authorize Spotify if there is an error 
           document.getElementById('re-auth').style.display = "block";
       });
 
       player.addListener('initialization_error', ({ message }) => {
           console.error(message);
+          // Ask user to re-authorize Spotify if there is an error 
           document.getElementById('re-auth').style.display = "block";
       });
 
       player.addListener('authentication_error', ({ message }) => {
           console.error(message);
+          // Ask user to re-authorize Spotify if there is an error 
           document.getElementById('re-auth').style.display = "block";
       });
 
       player.addListener('account_error', ({ message }) => {
           console.error(message);
+          // Ask user to re-authorize Spotify if there is an error 
           document.getElementById('re-auth').style.display = "block";
       });
 
+      // Listen for if the playstate changed
       player.addListener('player_state_changed', ({
         track_window: { current_track}
       }) => {
+        // Display the playing track in the bottom navbar
         let name = current_track['name'];
         let artist = current_track['artists'][0]['name'];
         let id_current = current_track['id'];
         document.getElementById('track').innerHTML = '<b>'+name+'</b><br>'+artist;
+        // Set all the other tracks back to the default formatting
         for (const element of document.getElementsByClassName('other_text')) {
           document.getElementById(element.id.substring(0,22)).innerHTML = element.classList[1];
           element.style.color = '#C9C6D8';
           element.style.fontWeight = 'normal';
         }
+        // Bold and change the font color of the currently playing track
+        // Also add a music note to the play button in the track list to indicate which song is playing 
         document.getElementById(id_current+'text').style.color = 'white';
         document.getElementById(id_current+'text').style.fontWeight = 'bold';
         document.getElementById(id_current).innerHTML= '<i class="bi bi-music-note-beamed"></i>';
-        // console.log(document.getElementById(id_current).innerHTML);
       });
 
+      // Connect to the player
       player.connect();
 
+      // Play/pause the web player
       document.getElementById('togglePlay').onclick = function() {
         player.togglePlay();
         const play = document.getElementById('togglePlay');
+        // Change the navbar play/pause button to reflect the option that is not currently chosen
         if (play.innerHTML ==  '<i class="bi bi-play-fill"></i>'){
           play.innerHTML= '<i class="bi bi-pause"></i>';
         }
@@ -269,6 +293,7 @@
         }
       };
       
+      // Go to the previous song
       document.getElementById('togglePrevious').onclick = function() {
         player.previousTrack();
 
@@ -279,6 +304,7 @@
         
       };
 
+      // Go to the next song
       document.getElementById('toggleNext').onclick = function() {
         player.nextTrack();
         const play = document.getElementById('togglePlay');
@@ -288,6 +314,7 @@
         
       };
 
+      // Change the track list numbers to play buttons when the user hovers over the track
       for (const element of document.getElementsByClassName('play')) {
         const number = element.innerHTML;
         const current_id = element.id;
@@ -307,10 +334,12 @@
         };
         }
       
+      // Do not allow users to edit the name of their Top Tracks playlist
       if ('{{ playlist.title }}' == 'Top Tracks'){
         document.getElementById('edit').style.display = 'none';
       }
 
+      // Display the pop-up to explain the edit playlist name button 
       const edit = document.getElementById('edit_playlist');
       const edit_info = document.getElementById('edit_info');
       edit.onmouseover = function(){
@@ -324,6 +353,7 @@
         
       const playlistTracks = JSON.parse('{{ playlist_tracks | tojson }}');
 
+      // Allow the user to start playing the playlist at any track
       URIs = []
       for (const track of playlistTracks) {
         URIs.push('spotify:track:'+track);
@@ -361,7 +391,7 @@
         const trackID = track;
         document.getElementById(trackID).onclick = function() {
           const update_queue = () => {
-            console.log("Updating the queue");
+            console.log("Updating the queue not from start");
             let update_queue = fetch("https://api.spotify.com/v1/me/player/play", {
               method: "PUT",
               body: JSON.stringify({
@@ -372,6 +402,7 @@
               }),
             }).then((response) => {
               console.log(response)
+              // Ask user to re-authorize Spotify if there is an error 
               if (response['status'] > 300) {
                 document.getElementById('re-auth').style.display = "block";
               }});
@@ -379,7 +410,8 @@
         update_queue();
         
         player.togglePlay();
-
+        
+        // Display the bottom navbar
         const navigate=document.getElementById('navigate');
         navigate.style.display = "block";
       };
@@ -390,7 +422,6 @@
 {% endblock %}
 
 {% block js %}
-  <script src="/static/genres.js"></script>
   <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
