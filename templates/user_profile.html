@@ -41,7 +41,7 @@
       <div class="collapse" id="collapseExample">
           <div class="row">
             {# If the user has no solo playlists, prompt them to create one #}
-            {% if user.get_solo_playlists(user) == [] %}
+            {% if user.get_solo_playlists(user) == [] or 'Top Tracks' in user.get_solo_playlists(user)[0].title %}
             <div class="card col-6 col-sm-6 col-md-4 col-lg-4 col-xl-3">
               <div class="card-body">
                 <form action = /playlist method = 'POST'>  
@@ -125,7 +125,7 @@
             <h5><b>Pending Invitations</b></h5>
             {% if user.get_pending_invitations(user) != [] %}
               {% for invitation_id in user.get_pending_invitations(user) %}
-              <div class="card col-6 col-sm-6 col-md-4 col-lg-4 col-xl-3">
+              <div class="card col-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
                 <div class="card-body">
                 <form action = "/update_invitation/{{ invitation_id }}" method = 'POST'>
                   <p>Invitation from {{ user.get_other_user_by_invitation_id(invitation_id).username }}</p>

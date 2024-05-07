@@ -15,7 +15,7 @@ os.system('createdb music')
 model.connect_to_db(server.app)
 
 #for TESTING
-# model. db.create_all()
+# model.db.create_all()
 
 #load the seed data into the database
 os.system('psql music < music.sql')

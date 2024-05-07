@@ -2,9 +2,9 @@
 
 from model import db, User, Track, User_Track, Playlist_Shared, Playlist_Solo, Playlist_Shared_Track, Playlist_Solo_Track, Invitation
 
-def create_user(username, password, explicit_content):
+def create_user(username, password, explicit_content, spotify_user_id):
     """Create a user"""
-    user = User(username=username, password=password, explicit_content=explicit_content)
+    user = User(username=username, password=password, explicit_content=explicit_content, spotify_user_id=spotify_user_id)
 
     return user
 

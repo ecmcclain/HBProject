@@ -282,7 +282,8 @@ CREATE TABLE public.users (
     id integer NOT NULL,
     username character varying,
     password character varying,
-    explicit_content boolean
+    explicit_content boolean,
+    spotify_user_id character varying
 );
 
 
@@ -709,10 +710,10 @@ COPY public.user_tracks (id, user_id, track_id, listened_to) FROM stdin;
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: lilymcclain
 --
 
-COPY public.users (id, username, password, explicit_content) FROM stdin;
-1	henry	henry	t
-2	kylie	kylie	t
-3	lily	lily	t
+COPY public.users (id, username, password, explicit_content, spotify_user_id) FROM stdin;
+1	henry	henry	t	henryawolfe
+2	kylie	kylie	t	zipping74
+3	lily	lily	t	lilymac000
 \.
 
 

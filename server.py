@@ -44,12 +44,17 @@ def create_account():
     password = request.form.get('password')
     explicit_content = bool(request.form.get('explicit_content'))
 
+    #check that the form is completed
+    if username == '' or password == '':
+        flash("Please complete all fields.")
+        return render_template('new_user.html')
+
     #If the given username already exists, ask user to input a new username
     if crud.get_user_by_username(username.lower()) is not None:
         flash('Account already exists with that username. Please log in or use a different username.')
     #create a new user and add the user to the session. Set the created user id in the cookie session 
     else:
-        user = crud.create_user(username.lower(), password, explicit_content)
+        user = crud.create_user(username.lower(), password, explicit_content, spotify_user_id="")
         db.session.add(user)
         db.session.commit()
         session['created_user_id'] = user.id
@@ -84,7 +89,7 @@ def login():
             if not app.config['TESTING']:
                 temp = requests.get(API_BASE_URL + 'me', headers=headers)
                 spotify_user_id = temp.json()['id']
-                session['spotify_user_id'] = spotify_user_id
+                session['spotify_user_id'] = user.spotify_user_id
 
             return render_template('user_profile.html', user = user)
     
@@ -290,9 +295,9 @@ def view_top_tracks():
     user = crud.get_user_by_id(session['current_user'])
 
     #check if the top tracks playlist already exists
-    if crud.get_solo_playlists_by_name('Top_Tracks') == []: 
+    if crud.get_solo_playlists_by_name(f"{user.spotify_user_id}'s Top_Tracks") == []: 
         #create a solo playlist and add it to the session
-        playlist = crud.create_solo_playlist(user.id, "Top Tracks", False)
+        playlist = crud.create_solo_playlist(user.id, f"{user.spotify_user_id}'s Top Tracks", False)
         db.session.add(playlist)
         for track in user.tracks:
             playlist_track = crud.create_playlist_solo_track(playlist, track)
@@ -300,7 +305,7 @@ def view_top_tracks():
         db.session.commit()
     #if it exists, access the playlist
     else: 
-        playlist = crud.get_solo_playlists_by_name('Top_Tracks')[0]
+        playlist = crud.get_solo_playlists_by_name(f"{user.spotify_user_id}'s Top_Tracks")[0]
 
     #display the playlist
     return render_template('playlist.html', user=user, playlist=playlist, access_token = session['access_token'], playlist_tracks = crud.get_playlist_spotify_track_ids(playlist))
@@ -461,8 +466,6 @@ def get_genres():
     all_genres = []
     all_genres.append({'name': list(genres.keys()),
                         'count': list(genres.values())})
-    print(all_genres)  
-    print("should see graph")
     return jsonify({'data': all_genres})
 
 @app.route('/user_genres.json')
@@ -482,8 +485,6 @@ def user_genres():
     all_genres = []
     all_genres.append({'name': list(genres.keys()),
                         'count': list(genres.values())})
-    print(all_genres)  
-    print("should see graph user")
     return jsonify({'data': all_genres})
 
 
@@ -562,6 +563,8 @@ def get_user_data():
         created_user = crud.get_user_by_id(session['created_user_id'])
     else: 
         created_user = crud.get_user_by_id(session['current_user'])
+
+    created_user.spotify_user_id = spotify_user_id
 
     #get the user's top tracks from Spotify
     top_tracks_url = API_BASE_URL + f'me/top/tracks?time_range=long_term'

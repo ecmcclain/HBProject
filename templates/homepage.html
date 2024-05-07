@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}TEMP TITLE{% endblock %}
+{% block title %}Lemme Show You a Song{% endblock %}
 
 {% block head %}
   {# ChartJS reference #}   
@@ -20,7 +20,7 @@
 
     {# Log in form #}
     <div class="column col-12 col-sm-12 col-md-6 col-lg-4 col-xl-4">
-    <h2>Log In</h2>
+    <h2 style="color: white;">Log In</h2>
     <form  action="/login" method="POST">
       <div class="form-group">
         <label for="exampleInputEmail1">Username</label>
@@ -44,9 +44,15 @@
 
     {# Graphic of all users' top genres #}
     <div class="column col-12 col-sm-12 col-md-6 col-lg-8 col-xl-7">
+      <div class="card">
+        <div class="card-body">
+          <h2>What is this?</h2>
+          <p style="margin-bottom: 0;">Make new playlists with other Spotify users of songs you haven't heard before. Or make your own playlists of new songs based on your favorite songs.</p>
+        </div>
+      </div>
     <div class="card">
       <div class="card-body">
-        <h2>All Users' Top Genres</h2>
+        <h2>All of Our Users' Top Genres</h2>
         <div id="site-content">
           <canvas id="all_genres"></canvas>
         </div>

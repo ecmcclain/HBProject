@@ -97,7 +97,8 @@
   </table>
 
   {# Button to allow user to create a new playlist with the same users as this playlist #}
-  {% if playlist.title != 'Top Tracks' %}
+  {% for title in playlist.title %}
+  {% if 'Top Tracks' in title %}
     {% if not playlist.joining_user_id %}
       <form action='/playlist' method = 'POST'>
         <input class='btn btn-primary' type="submit" value="Make a Fresh Playlist?">
@@ -113,9 +114,11 @@
         </form>
       {% endif %}
     {% endif %} 
+    
 
     <p>Please note, this will create a new playlist, but you will still have access to this one.</p>
   {% endif %}
+  {% endfor %}
   </div>
 <br>
 <br>
@@ -178,7 +181,7 @@
 
 </div>
 
-{# Javascript for the Spotify webplayer to allow users to listen to the playlist on the webpage#}
+<!-- {# Javascript for the Spotify webplayer to allow users to listen to the playlist on the webpage#} -->
 <script src="https://sdk.scdn.co/spotify-player.js"></script>
 <script>
   window.onSpotifyWebPlaybackSDKReady = () => {
@@ -335,7 +338,7 @@
         }
       
       // Do not allow users to edit the name of their Top Tracks playlist
-      if ('{{ playlist.title }}' == 'Top Tracks'){
+      if ('{{ playlist.title }}'.includes('Top Tracks')){
         document.getElementById('edit').style.display = 'none';
       }
 

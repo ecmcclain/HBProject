@@ -152,6 +152,7 @@ ol.two-columns{
     page-break-inside: avoid-column;
     break-inside: avoid-column;
     display:inline-block;
+    column-gap: 10%;
 }
 
 li {

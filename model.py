@@ -13,6 +13,7 @@ class User(db.Model):
     username = db.Column(db.String)
     password = db.Column(db.String)
     explicit_content = db.Column(db.Boolean)
+    spotify_user_id = db.Column(db.String)
 
     tracks = db.relationship('Track', 
                             secondary='user_tracks', 
