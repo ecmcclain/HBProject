@@ -3,6 +3,29 @@
 
 {% block body %}
 
+{# Navbar Logged Out #}
+     <nav class="navbar fixed-top navbar-expand-sm navbar-dark bg-dark justify-content-between">
+      <a class="navbar-brand mb-2 ms-2 logo" href="/"><img src="/static/lemmeshowyouasonglogo.png" width="130"></a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-2">
+          <li class="nav-item">
+          </li>
+        </ul>
+      </div>
+    </nav>
+
 {# Headline for the creating user page #}
 <div class="jumbotron jumbotron-fluid">
   <div class="container-fluid">
@@ -25,7 +48,6 @@
       <label for="exampleInputPassword1">Password</label>
       <input type="password" name="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
     </div>
-    <br>
     <label for="yes">Allow explicit content?</label>
     <div class="form-group form-check form-check-inline">
       <input type="radio" class="form-check-input" name="explicit_content" value="1" id="yes">

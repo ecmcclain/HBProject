@@ -97,23 +97,24 @@
   </table>
 
   {# Button to allow user to create a new playlist with the same users as this playlist #}
+  <div id="new">
   {% if not 'Top Tracks' in playlist.title %}
     {% if not playlist.joining_user_id %}
       <form action='/playlist' method = 'POST'>
-        <input class='btn btn-primary' type="submit" value="Make a Fresh Playlist?">
+        <input class='btn btn-primary prog' type="submit" value="Make a Fresh Playlist?">
       </form>  
     {% else %}
       {% if user.id == playlist.creating_user_id %}
         <form action='/playlist/{{ playlist.joining_user_id }}' method = 'POST'>
-          <input class='btn btn-primary' type="submit" value="Make a Fresh Playlist with this User?">
+          <input class='btn btn-primary prog' type="submit" value="Make a Fresh Playlist with this User?">
         </form>
       {% else %}
         <form action='/playlist/{{ playlist.creating_user_id }}' method = 'POST'>
-          <input  class='btn btn-primary' type="submit" value="Make a Fresh Playlist with this User?">
+          <input  class='btn btn-primary prog' type="submit" value="Make a Fresh Playlist with this User?">
         </form>
       {% endif %}
     {% endif %} 
-    
+  </div>
 
     <p>Please note, this will create a new playlist, but you will still have access to this one.</p>
   {% endif %}
@@ -416,6 +417,16 @@
         const navigate=document.getElementById('navigate');
         navigate.style.display = "block";
       };
+      }
+
+      // loading graphic for long requests
+      const inputs = document.getElementsByClassName("prog");
+      for (var i=0,len=inputs.length; i<len; i++) {
+        inputs[i].onclick = function() {
+          document.body.style.cursor = "progress";
+          inputs[0].style.cursor = 'progress';
+          document.getElementsByTagName('form').style.cursor = "progress";
+        };
       }
   }
 </script>
