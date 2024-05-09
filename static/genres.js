@@ -39,6 +39,9 @@ fetch('/get_genres.json')
             }
         ]},
       options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        aspectRatio: .85,
         plugins: {
             title: {
                 display: false,
@@ -83,6 +86,9 @@ fetch('/user_genres.json')
             }
         ]},
       options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        aspectRatio: .85,
         plugins: {
             title: {
                 display: false,

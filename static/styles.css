@@ -12,7 +12,6 @@ body {
 .card {
     margin: 0px 0px 10px 0px;
     background-color: #C9C6D8;
-    /* border: 1px solid white; */
 }
 
 .accordion {
@@ -52,14 +51,9 @@ body {
 
 
 .btn {
-    /* color: #C9C6D8; */
     color: white;
     border-color: #323039;
 }
-
-/* .btn-primary {
-    background-color: #5a5ad8;
-} */
 
 .modal {
     color: black;
@@ -71,11 +65,11 @@ body {
 
 #site-content {
     width: 100%;
-    margin: 0 auto;
+    margin: 10px;
     color: white;
     position: relative;
-    width: 40vw;
   }
+
 
 .logo {
     margin: 4px;
@@ -95,10 +89,12 @@ body {
 
 .nav-tabs .nav-link {
     border: 3px solid #d7d5e6;
+    width: 14rem;
 }
 
 .nav-link{
     color: black;
+    display: inline-flex;
 }
 
 .tab-pane{

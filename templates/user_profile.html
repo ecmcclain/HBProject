@@ -41,7 +41,7 @@
       <div class="collapse" id="collapseExample">
           <div class="row">
             {# If the user has no solo playlists, prompt them to create one #}
-            {% if user.get_solo_playlists(user) == [] or 'Top Tracks' in user.get_solo_playlists(user)[0].title %}
+            {% if user.get_solo_playlists(user) == [] or ( user.get_solo_playlists(user)|length == 1 and 'Top Tracks' in user.get_solo_playlists(user)[0].title) %}
             <div class="card col-6 col-sm-6 col-md-4 col-lg-4 col-xl-3">
               <div class="card-body">
                 <form action = /playlist method = 'POST'>  
@@ -93,22 +93,22 @@
 
     <div id="homepage" class="d-flex rounded">
       <div class="nav nav-tabs flex-column" id="pills-tab" role="tablist" aria-orientation="vertical" >
-        <button class="nav-link active" id="pills-home-tab" data-bs-toggle="pill" data-bs-target="#pills-home" type="button" role="tab" aria-controls="pills-home" aria-selected="true"><b>Create a Playlist with Another User</b></button>
+        <button class="nav-link active" id="pills-home-tab" data-bs-toggle="pill" data-bs-target="#pills-home" type="button" role="tab" aria-controls="pills-home" aria-selected="true"><i class="bi bi-people-fill"></i><b>&nbsp&nbsp&nbspInvite Users</b></button>
         <button class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">
-          <b><span id="pending_badge">
-          Review Invitations
+          <i class="bi bi-envelope-fill"></i>&nbsp&nbsp&nbsp<b><span id="pending_badge">
+            Invitations
           </span></b>
         </button>
-        <button class="nav-link" id="pills-settings-tab" data-bs-toggle="pill" data-bs-target="#pills-settings" type="button" role="tab" aria-controls="pills-settings" aria-selected="false"><b>View Your Top Tracks</b></button>
-        <button class="nav-link" id="pills-genres-tab" data-bs-toggle="pill" data-bs-target="#pills-genres" type="button" role="tab" aria-controls="pills-genres" aria-selected="false"><b>View Your Top Genres</b></button>
+        <button class="nav-link" id="pills-settings-tab" data-bs-toggle="pill" data-bs-target="#pills-settings" type="button" role="tab" aria-controls="pills-settings" aria-selected="false"><i class="bi bi-music-note-list"></i><b>&nbsp&nbsp&nbspTop Tracks</b></button>
+        <button class="nav-link" id="pills-genres-tab" data-bs-toggle="pill" data-bs-target="#pills-genres" type="button" role="tab" aria-controls="pills-genres" aria-selected="false"><i class="bi bi-bar-chart-fill"></i><b>&nbsp&nbsp&nbspTop Genres</b></button>
       </div>
-
       {# Option to invite another user to create a playlist together #}
       <div class="tab-content rounded" id="pills-tabContent">
         <div class="tab-pane rounded fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab" tabindex="0">
+          <h5><b>Create a Shared Playlist</b> </h5>
           <form  action= "/blend" method="POST">
             <div class="form-group col-3 col-sm-4 col-md-4">
-              <label for="exampleInputEmail1">Please invite user by username:</label>
+              <label for="exampleInputEmail1">&nbspInvite user by username:</label>
               <input type="text" name="other-user" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter username">
             </div>
             <br>
@@ -151,6 +151,7 @@
               </div>
               {% endfor %}
             {% else %}
+            <h5><b>Sent Invitations</b> </h5>
             You have not yet sent any invitations. 
             {% endif %}
           </div>
@@ -180,7 +181,7 @@
             <input class="form-check-input" type="checkbox" role="switch" id="allGenres">
             <label class="form-check-label" id='chartLabel' for="allGenres" style="font-size: 16px">View all users' top genres</label>
           </h5> 
-          <div id="site-content">
+          <div id="site-content" style="width: 60vw; height: 50vh;">
               <canvas id="user_genres"></canvas>
               <canvas id="all_genres" style="display: none"></canvas>
             </div>
@@ -200,10 +201,10 @@
 <script>
   // Add a pending badge if there are invitations for the user's review 
   if (document.getElementById('pending').innerHTML.includes(' You are up to date! No pending invitations.')){
-    document.getElementById('pending_badge').innerHTML = 'Review Invitations';
+    document.getElementById('pending_badge').innerHTML = 'Invitations';
   }
   else {
-    document.getElementById('pending_badge').innerHTML = 'Review Invitations <span class="badge rounded-pill bg-success" display="none;">Pending</span>';
+    document.getElementById('pending_badge').innerHTML = 'Invitations <span class="badge rounded-pill bg-success" display="none;">Pending</span>';
   }
 
   console.log(document.getElementById('allGenres').checked);

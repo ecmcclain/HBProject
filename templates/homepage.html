@@ -8,6 +8,41 @@
 
 {% block body %}
 
+{% if logged_in != True %}
+{# Navbar Logged Out #}
+     <nav class="navbar fixed-top navbar-expand-sm navbar-dark bg-dark justify-content-between">
+      <a class="navbar-brand mb-2 ms-2 logo" href="/"><img src="/static/lemmeshowyouasonglogo.png" width="130"></a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-2">
+          <li class="nav-item">
+          </li>
+        </ul>
+        <ul class="navbar-nav d-flex">
+          <form class="form-inline" style = "display: inline-flex;" action="/login" method="POST">
+            <div class="form-group" style = "display: inline-flex;">
+              <input type="text" style='margin-right:.5rem' name="username" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Username">
+              <input type="password" style='margin-right:.5rem' name="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+            </div>
+            <br>
+            <button type="submit" style='margin-right:.5rem' class="btn btn-primary">Log In</button>
+          </form>
+        </ul>
+      </div>
+    </nav>
+  {% endif %}
+
 {# Headline for the homepage #}
 <div class="jumbotron jumbotron-fluid">
   <div class="container-fluid">
@@ -17,52 +52,39 @@
 
 <div class="container-fluid">
   <div class='row'>
-
-    {# Log in form #}
-    <div class="column col-12 col-sm-12 col-md-6 col-lg-4 col-xl-4">
-    <h2 style="color: white;">Log In</h2>
-    <form  action="/login" method="POST">
-      <div class="form-group">
-        <label for="exampleInputEmail1">Username</label>
-        <input type="text" name="username" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter username">
+    <div class="column col-12 col-sm-12 col-md-8 col-lg-7 col-xl-6">
+      <div class="card" style = 'margin-top:1.5rem'>
+        <div class="card-body">
+          <h2>All of Our Users' Top Genres</h2>
+          <div id="site-content">
+            <canvas id="all_genres"></canvas>
+          </div>
+        </div>
       </div>
-      <div class="form-group">
-        <label for="exampleInputPassword1">Password</label>
-        <input type="password" name="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
-      </div>
-      <br>
-      <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
-    <br>
-
-    {# Option to redirect to create an account if the user does not have one #}
-    <span>
-      Dont have an account?
-      <a href='/users' style="color: white">Create account</a>
-    </span>
     </div>
 
     {# Graphic of all users' top genres #}
-    <div class="column col-12 col-sm-12 col-md-6 col-lg-8 col-xl-7">
-      <div class="card">
+    <div class="column col-12 col-sm-12 col-md-4 col-lg-4 col-xl-4">
+      <div class="card" style = 'margin-top:1.5rem'>
+        <div class="card-body">
+          {# Option to redirect to create an account if the user does not have one #}
+          <h2>Join Us!</h2>
+          <span>
+            Dont have an account?
+            <b><a href='/users' style="color: #323039">Create account</a></b>
+          </span>
+        </div>
+      </div>
+      <div class="card" style = 'margin-top:1.5rem'>
         <div class="card-body">
           <h2>What is this?</h2>
-          <p style="margin-bottom: 0;">Make new playlists with other Spotify users of songs you haven't heard before. Or make your own playlists of new songs based on your favorite songs.</p>
+          <p style="margin-bottom: 0;">Make new playlists with other Spotify users of songs you haven't heard before. Or make your own playlists of new songs based on your tastes.</p>
         </div>
       </div>
-    <div class="card">
-      <div class="card-body">
-        <h2>All of Our Users' Top Genres</h2>
-        <div id="site-content">
-          <canvas id="all_genres"></canvas>
-        </div>
-      </div>
-    </div>
+    
   </div>
 </div>
-  
-<br>
-</div>
+
 
 {% endblock %}
 

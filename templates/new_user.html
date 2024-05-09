@@ -11,8 +11,10 @@
 </div>
 
 <div class="container-fluid d-flex flex-column align-items-center">
-
-<h2 style="color: white;">Create Account</h2>
+  <div class="col-12 col-sm-8 col-md-6 col-lg-4">
+  <div class="card">
+    <div class="card-body">
+<h2 style="color: black;">Create Account</h2>
   {# Form to create an accoutn with username, password, and yes/no explicit content #}
   <form  action="/users" method="POST">
     <div class="form-group col-12 col-sm-12 col-md-12">
@@ -26,11 +28,11 @@
     <br>
     <label for="yes">Allow explicit content?</label>
     <div class="form-group form-check form-check-inline">
-      <input type="radio" class="form-check-input" name="explicit_content" value="True" id="yes">
+      <input type="radio" class="form-check-input" name="explicit_content" value="1" id="yes">
       <label class="form-check-label" for="yes">Yes</label>
       </div>
     <div class="form-group form-check form-check-inline">
-      <input type="radio" class="form-check-input" name="explicit_content" value="False" id="no">
+      <input type="radio" class="form-check-input" name="explicit_content" value="0" id="no">
       <label class="form-check-label" for="no">No</label>
     </div>
     <br><br>
@@ -41,8 +43,12 @@
   {# Redirect to the login page is the user already has an account #}
   <span>
   Already have an account?
-  <a href='/'  style="color: white">Log In</a>
-</span>
+  <a href='/'  style="color: black">Log In</a>
+
+  
+    </div>
+  </div>
+</div>
 </div>
 
 {% endblock %}

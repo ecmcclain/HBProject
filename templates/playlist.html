@@ -97,8 +97,7 @@
   </table>
 
   {# Button to allow user to create a new playlist with the same users as this playlist #}
-  {% for title in playlist.title %}
-  {% if 'Top Tracks' in title %}
+  {% if not 'Top Tracks' in playlist.title %}
     {% if not playlist.joining_user_id %}
       <form action='/playlist' method = 'POST'>
         <input class='btn btn-primary' type="submit" value="Make a Fresh Playlist?">
@@ -118,13 +117,12 @@
 
     <p>Please note, this will create a new playlist, but you will still have access to this one.</p>
   {% endif %}
-  {% endfor %}
   </div>
 <br>
 <br>
 <br>
 
-{}
+{# Modal to rename the playlist #}
 <div class="modal fade" tabindex="-1" id="rename" aria-hidden="true" style="display: none;">
   <div class="modal-dialog">
     <div class="modal-content">

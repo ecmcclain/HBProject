@@ -29,8 +29,12 @@ def homepage():
     """Show homepage."""
 
     print(session)
+    if 'current_user' in session:
+        logged_in = True
+    else: 
+        logged_in = False
 
-    return render_template('homepage.html')
+    return render_template('homepage.html', logged_in=logged_in)
 
 @app.route('/users')
 def make_new_user():
@@ -42,12 +46,12 @@ def create_account():
     """Create a new user"""
     username = request.form.get('username')
     password = request.form.get('password')
-    explicit_content = bool(request.form.get('explicit_content'))
-
+    
     #check that the form is completed
-    if username == '' or password == '':
+    if request.form.get('explicit_content') is None or username == '' or password == '':
         flash("Please complete all fields.")
         return render_template('new_user.html')
+    explicit_content = bool(int(request.form.get('explicit_content')))
 
     #If the given username already exists, ask user to input a new username
     if crud.get_user_by_username(username.lower()) is not None:
@@ -295,9 +299,9 @@ def view_top_tracks():
     user = crud.get_user_by_id(session['current_user'])
 
     #check if the top tracks playlist already exists
-    if crud.get_solo_playlists_by_name(f"{user.spotify_user_id}'s Top_Tracks") == []: 
+    if crud.get_solo_playlists_by_name(f"{user.username}'s Top_Tracks") == []: 
         #create a solo playlist and add it to the session
-        playlist = crud.create_solo_playlist(user.id, f"{user.spotify_user_id}'s Top Tracks", False)
+        playlist = crud.create_solo_playlist(user.id, f"{user.username}'s Top Tracks", False)
         db.session.add(playlist)
         for track in user.tracks:
             playlist_track = crud.create_playlist_solo_track(playlist, track)
@@ -305,7 +309,7 @@ def view_top_tracks():
         db.session.commit()
     #if it exists, access the playlist
     else: 
-        playlist = crud.get_solo_playlists_by_name(f"{user.spotify_user_id}'s Top_Tracks")[0]
+        playlist = crud.get_solo_playlists_by_name(f"{user.username}'s Top_Tracks")[0]
 
     #display the playlist
     return render_template('playlist.html', user=user, playlist=playlist, access_token = session['access_token'], playlist_tracks = crud.get_playlist_spotify_track_ids(playlist))
@@ -491,6 +495,7 @@ def user_genres():
 
 
 
+
 @app.route('/authorize')
 def authorize():
     """Complete Spotify's OAuth for the user"""
@@ -581,7 +586,7 @@ def get_user_data():
         else:
             top_tracks_url=None
 
-        #Get all the tracks off of each of the user's shared tracks
+        #Get all the tracks off of each of the user's top tracks
         items = top_tracks["items"]
         for track in items:
             title = track['name']
@@ -594,13 +599,16 @@ def get_user_data():
                 genre = choice(artist_temp['genres'])
             else: 
                 genre = None
+            # check if the track is in the database, if not create it
             if crud.get_track_by_spotify_id(spotify_track_id) is None:
                 print(crud.get_track_by_spotify_id(spotify_track_id))
                 new_track = crud.create_track(title, artist, artist_id, spotify_track_id, genre)
                 db.session.add(new_track)
                 db.session.commit()
-                new_user_track = crud.create_user_track(created_user,new_track,listened_to=True)
-                db.session.add(new_user_track)
+            else:
+                new_track = crud.get_track_by_spotify_id(spotify_track_id)
+            new_user_track = crud.create_user_track(created_user,new_track,listened_to=True)
+            db.session.add(new_user_track)
     db.session.commit()
 
     #delete the created user id from the session if it exists and ask the user to log in
