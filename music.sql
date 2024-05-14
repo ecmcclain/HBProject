@@ -409,7 +409,7 @@ COPY public.shared_playlist_tracks (id, playlist_id, track_id) FROM stdin;
 --
 
 COPY public.shared_playlists (id, creating_user_id, joining_user_id, title, public) FROM stdin;
-1	2	3	kylie & lily Playlist	f
+1	2	3	zipping74 & lilymac000 Playlist	f
 \.
 
 
@@ -486,9 +486,9 @@ COPY public.solo_playlist_tracks (id, playlist_id, track_id) FROM stdin;
 --
 
 COPY public.solo_playlists (id, creating_user_id, title, public) FROM stdin;
-1	1	henry Playlist	f
-2	2	kylie Playlist	f
-3	3	lily Playlist	f
+1	1	henryawolfe Playlist	f
+2	2	zipping74 Playlist	f
+3	3	lilymac000 Playlist	f
 \.
 
 
@@ -711,9 +711,9 @@ COPY public.user_tracks (id, user_id, track_id, listened_to) FROM stdin;
 --
 
 COPY public.users (id, username, password, explicit_content, spotify_user_id) FROM stdin;
-1	henry	henry	t	henryawolfe
-2	kylie	kylie	t	zipping74
-3	lily	lily	t	lilymac000
+1	henryawolfe	henry	t	henryawolfe
+2	zipping74	kylie	t	zipping74
+3	lilymac000	lily	t	lilymac000
 \.
 
 
