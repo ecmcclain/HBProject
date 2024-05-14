@@ -89,51 +89,6 @@ class FlaskTestsDatabase(TestCase):
         result = self.client.get("/profile", follow_redirects=True)
         self.assertIn(b"Playlists", result.data)
 
-    # def test_departments_details(self):
-    #     """Test departments page."""
-
-    #     result = self.client.get("/department/fin")
-    #     self.assertIn(b"Phone: 555-1000", result.data)
-
-
-# class FlaskTestsLoggedIn(TestCase):
-#     """Flask tests with user logged in to session."""
-
-#     def setUp(self):
-#         """Stuff to do before every test."""
-
-#         app.config['TESTING'] = True
-#         app.config['SECRET_KEY'] = 'key'
-#         self.client = app.test_client()
-
-#         # Start each test with a user ID stored in the session.
-#         with self.client as c:
-#             with c.session_transaction() as sess:
-#                 sess['user_id'] = 1
-
-#     def test_important_page(self):
-#         """Test important page."""
-
-#         result = self.client.get("/important")
-#         self.assertIn(b"You are a valued user", result.data)
-
-
-# class FlaskTestsLoggedOut(TestCase):
-#     """Flask tests with no logged in user in session."""
-
-#     def setUp(self):
-#         """Stuff to do before every test."""
-
-#         app.config['TESTING'] = True
-#         self.client = app.test_client()
-
-#     def test_important_page(self):
-#         """Test that user can't see important page when logged out."""
-
-#         result = self.client.get("/important", follow_redirects=True)
-#         self.assertNotIn(b"You are a valued user", result.data)
-#         self.assertIn(b"You must be logged in", result.data)
-
 
 if __name__ == "__main__":
     import unittest
